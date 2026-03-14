@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/ingest",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/velocity",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/alerts",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/admin/recalculate-products",
+      "schedule": "0 */12 * * *"
+    }
+  ]
+}

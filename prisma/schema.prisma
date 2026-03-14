@@ -1,0 +1,430 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  FREE
+  PRO
+  SCALE
+  AGENCY
+}
+
+enum Platform {
+  TIKTOK
+  FACEBOOK
+  INSTAGRAM
+  YOUTUBE
+}
+
+enum AdType {
+  VIDEO
+  IMAGE
+  CAROUSEL
+}
+
+enum HookType {
+  CURIOSITY_GAP
+  PAIN_POINT
+  SOCIAL_PROOF
+  PATTERN_INTERRUPT
+  BOLD_CLAIM
+  QUESTION
+  STORY
+  TUTORIAL
+  OFFER
+  FEAR
+}
+
+enum CtaType {
+  SHOP_NOW
+  LEARN_MORE
+  SIGN_UP
+  GET_OFFER
+  WATCH_MORE
+  BOOK_NOW
+  DOWNLOAD
+  CONTACT_US
+  TRY_FREE
+  OTHER
+}
+
+enum FunnelType {
+  DIRECT_RESPONSE
+  LEAD_GEN
+  CONTENT_FIRST
+  BRAND_AWARENESS
+  RETARGETING
+  PRODUCT_LAUNCH
+}
+
+enum RemixType {
+  HOOKS
+  SCRIPT
+  ADCOPY
+  BRIEF
+  WIREFRAME
+}
+
+enum AlertFrequency {
+  INSTANT
+  DAILY_DIGEST
+  WEEKLY_DIGEST
+}
+
+enum AdStatus {
+  RAW
+  ENRICHED
+  CLASSIFIED
+}
+
+enum LifecycleStage {
+  HIDDEN_GEM
+  EARLY_SCALING
+  GROWTH
+  SATURATED
+  DYING
+}
+
+enum TrendDirection {
+  RISING
+  STABLE
+  DECLINING
+}
+
+// ─── Auth (NextAuth adapter) ──────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String?   @unique
+  emailVerified        DateTime?
+  name                 String?
+  image                String?
+  role                 UserRole  @default(FREE)
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+
+  accounts   Account[]
+  sessions   Session[]
+  remixes    Remix[]
+  savedAds   SavedAd[]
+  folders    Folder[]
+  alertRules    AlertRule[]
+  notifications Notification[]
+  usageLogs     UsageLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+  @@index([stripeCustomerId])
+}
+
+// ─── Ads ──────────────────────────────────────────────────────────────────────
+
+model Ad {
+  id              String    @id @default(cuid())
+  platform        Platform
+  externalId      String    @unique
+  brandName       String
+  productName     String?
+  niche           String
+  adType          AdType    @default(VIDEO)
+  duration        Int?      // seconds; null for IMAGE/CAROUSEL
+  country         String    @default("US")
+  language        String    @default("en")
+
+  // Creative
+  hookText        String?   @db.Text
+  hookType        HookType?
+  ctaText         String?
+  ctaType         CtaType?
+  thumbnailUrl    String?
+  videoUrl        String?
+  landingPageUrl  String?
+
+  // Spend intelligence
+  estimatedSpendMin Float?
+  estimatedSpendMax Float?
+
+  // Lifecycle
+  firstSeenAt     DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+  daysRunning     Int       @default(0)
+  isActive        Boolean   @default(true)
+  status          AdStatus  @default(RAW)
+
+  // Velocity (cached from velocityEngine cron — updated every 6h)
+  velocityScore      Float    @default(0)   // 0–100
+  velocityTier       String   @default("STEADY") // EXPLOSIVE | HIGH | RISING | STEADY
+  velocityUpdatedAt  DateTime?
+
+  // Product Lifecycle
+  productInsightId String?
+  productInsight   ProductInsight? @relation(fields: [productInsightId], references: [id], onDelete: SetNull)
+
+  anatomy       AdAnatomy?
+  metrics       AdMetrics[]
+  remixes       Remix[]
+  savedBy       SavedAd[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([platform])
+  @@index([niche])
+  @@index([isActive])
+  @@index([firstSeenAt])
+  @@index([lastSeenAt])
+  @@index([daysRunning])
+  @@index([velocityScore])
+  @@index([velocityTier])
+  @@index([platform, niche])
+  @@index([platform, isActive])
+  @@index([niche, isActive])
+  @@index([niche, velocityScore])        // trending by niche
+  @@index([isActive, velocityScore])     // live trending feed
+  @@index([productInsightId])
+}
+
+// ─── Product Lifecycle Tracker ────────────────────────────────────────────────
+
+model ProductInsight {
+  id                    String         @id @default(cuid())
+  productName           String
+  productCategory       String         // normalised niche label
+  lifecycleStage        LifecycleStage @default(HIDDEN_GEM)
+  saturationScore       Float          @default(0)   // 0–100
+  firstDetectedAt       DateTime
+  peakDetectedAt        DateTime?      // when saturationScore was highest
+  totalAdCount          Int            @default(0)
+  uniqueAdvertiserCount Int            @default(0)
+  avgDaysRunning        Float          @default(0)
+  trendDirection        TrendDirection @default(RISING)
+  priceRange            String?        // e.g. "$19–$39"
+  topPlatform           String?        // platform with most ads for this product
+  updatedAt             DateTime       @updatedAt
+
+  ads Ad[]
+
+  @@index([lifecycleStage])
+  @@index([saturationScore])
+  @@index([productCategory])
+  @@index([trendDirection])
+  @@index([updatedAt])
+  @@index([lifecycleStage, saturationScore])
+}
+
+// ─── Ad Metrics (time-series) ─────────────────────────────────────────────────
+
+model AdMetrics {
+  id                 String   @id @default(cuid())
+  adId               String
+  likes              BigInt   @default(0)
+  comments           BigInt   @default(0)
+  shares             BigInt   @default(0)
+  views              BigInt   @default(0)
+  earlyVelocityScore Float    @default(0)
+  recordedAt         DateTime @default(now())
+
+  ad Ad @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@index([adId])
+  @@index([adId, recordedAt])
+  @@index([earlyVelocityScore])
+  @@index([recordedAt])
+}
+
+// ─── Ad Anatomy (AI-generated breakdown) ─────────────────────────────────────
+
+model AdAnatomy {
+  id               String     @id @default(cuid())
+  adId             String     @unique
+  hookScore        Float?     // 0–100
+  emotionalTriggers Json?     // string[] e.g. ["fear", "aspiration", "urgency"]
+  scriptStructure  Json?      // { hook, problem, demo, proof, cta } with timestamps
+  colorPalette     Json?      // { dominant: string[], accent: string, mood: string }
+  audioMood        String?
+  pacingNotes      String?    @db.Text
+  targetPsychology String?    @db.Text
+  fullScript       String?    @db.Text
+  funnelType       FunnelType?
+  aiModel          String?    // e.g. "claude-opus-4-6"
+  generatedAt      DateTime   @default(now())
+
+  ad Ad @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@index([funnelType])
+}
+
+// ─── Remixes ──────────────────────────────────────────────────────────────────
+
+model Remix {
+  id          String    @id @default(cuid())
+  userId      String
+  adId        String
+  remixType   RemixType
+  input       Json?     // brand voice, product info, platform target
+  output      Json?     // generated variations array
+  model       String?   // model used for generation
+  tokensUsed  Int       @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ad   Ad   @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([adId])
+  @@index([userId, remixType])
+  @@index([createdAt])
+}
+
+// ─── Saved Ads & Folders ─────────────────────────────────────────────────────
+
+model Folder {
+  id     String @id @default(cuid())
+  userId String
+  name   String
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savedAds SavedAd[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model SavedAd {
+  id       String  @id @default(cuid())
+  userId   String
+  adId     String
+  folderId String?
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ad     Ad      @relation(fields: [adId], references: [id], onDelete: Cascade)
+  folder Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, adId])
+  @@index([userId])
+  @@index([folderId])
+}
+
+// ─── Alert Rules ──────────────────────────────────────────────────────────────
+
+model AlertRule {
+  id                String         @id @default(cuid())
+  userId            String
+  name              String         // user-supplied label
+  niches            String[]       @default([]) // empty = all niches
+  platforms         String[]       @default([]) // empty = all platforms
+  velocityThreshold Float          @default(90) // 0–100 score
+  keywords          String?        // space-separated keywords matched against hookText/productName
+  frequency         AlertFrequency @default(INSTANT)
+  isActive          Boolean        @default(true)
+  lastCheckedAt     DateTime?      // updated by cron after each pass
+  emailLastSentAt   DateTime?      // rate-limit guard for digest emails
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  alertRuleId String?
+  adId        String
+  title       String
+  body        String?
+  isRead      Boolean  @default(false)
+  emailSentAt DateTime?
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertRule AlertRule? @relation(fields: [alertRuleId], references: [id], onDelete: SetNull)
+  ad        Ad         @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([adId])
+  @@index([alertRuleId])
+}
+
+// ─── Usage Log ────────────────────────────────────────────────────────────────
+
+model UsageLog {
+  id       String  @id @default(cuid())
+  userId   String
+  action   String  // e.g. "remix.script", "anatomy.view", "ad.search", "export.meta"
+  metadata Json?   // { adId, remixType, tokensUsed, platform, ... }
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([userId, action])
+  @@index([createdAt])
+}
