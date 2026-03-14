@@ -5,6 +5,8 @@ import { authOptions } from "@/lib/auth";
 import { SessionProvider } from "@/components/auth/SessionProvider";
 import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { CookieConsent } from "@/components/gdpr/CookieConsent";
+import { organizationSchema, webSiteSchema } from "@/lib/seo";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -21,8 +23,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AdForge — AI-Powered Ad Intelligence",
-    template: "%s | AdForge",
+    default: "AdSlack — AI-Powered Ad Intelligence",
+    template: "%s | AdSlack",
   },
   description:
     "Discover winning ads, decode what makes them work, and forge better creatives — powered by AI.",
@@ -35,23 +37,23 @@ export const metadata: Metadata = {
     "Meta ad library",
     "TikTok ad research",
   ],
-  authors: [{ name: "AdForge" }],
-  creator: "AdForge",
+  authors: [{ name: "AdSlack" }],
+  creator: "AdSlack",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ),
   openGraph: {
     type: "website",
     locale: "en_US",
-    title: "AdForge — AI-Powered Ad Intelligence",
+    title: "AdSlack — AI-Powered Ad Intelligence",
     description:
       "Discover winning ads, decode what makes them work, and forge better creatives.",
-    siteName: "AdForge",
+    siteName: "AdSlack",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@adforgeio",
-    title: "AdForge — AI-Powered Ad Intelligence",
+    site: "@adslackio",
+    title: "AdSlack — AI-Powered Ad Intelligence",
     description:
       "Discover winning ads, decode what makes them work, and forge better creatives.",
   },
@@ -82,10 +84,20 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans antialiased">
+        {/* Global entity schemas — present on every page for AI engines and search */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema()) }}
+        />
         <PostHogProvider>
           <SessionProvider session={session}>
             <ToastProvider>
               {children}
+              <CookieConsent />
             </ToastProvider>
           </SessionProvider>
         </PostHogProvider>

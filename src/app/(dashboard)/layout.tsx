@@ -40,6 +40,8 @@ export default function DashboardLayout({
           <NavItem href={"/discover" as Route} icon="🔍" label="Discover" />
           <NavItem href={"/saved"    as Route} icon="🔖" label="Saved Ads" />
           <NavItem href={"/products" as Route} icon="📊" label="Products" badge="PRO" />
+          <NavItem href={"/patterns" as Route} icon="🧠" label="Patterns" badge="PRO" />
+          <NavItem href={"/creators" as Route} icon="🎬" label="Creators" badge="PRO" />
           <NavItem href={"/alerts"   as Route} icon="🔔" label="Alerts" />
           <NavItem href={"/billing"  as Route} icon="💳" label="Billing" />
         </nav>

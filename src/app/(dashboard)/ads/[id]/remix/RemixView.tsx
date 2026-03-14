@@ -3,12 +3,15 @@
 import { useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import type { Route } from "next";
 import type {
   HooksOutput,
   ScriptsOutput,
   AdCopyOutput,
   CreativeBrief,
+  UGCOutput,
 } from "@/services/remixEngine";
+import type { StoryboardOutput } from "@/services/storyboardEngine";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,14 +34,34 @@ interface RemixViewProps {
   creditsTotal: number | null;     // null = unlimited
 }
 
-type TabId = "hooks" | "scripts" | "adcopy" | "brief";
+type TabId = "hooks" | "scripts" | "adcopy" | "ugc" | "brief" | "storyboard";
 
 interface TabResults {
   hooks?: HooksOutput;
   scripts?: ScriptsOutput;
   adcopy?: AdCopyOutput;
+  ugc?: UGCOutput;
   brief?: CreativeBrief;
+  storyboard?: StoryboardOutput;
 }
+
+const TAB_CREDIT_COST: Record<TabId, number> = {
+  hooks:      1,
+  scripts:    1,
+  adcopy:     1,
+  ugc:        1,
+  brief:      1,
+  storyboard: 2,
+};
+
+const TAB_MIN_ROLE: Record<TabId, string> = {
+  hooks:      "PRO",
+  scripts:    "PRO",
+  adcopy:     "PRO",
+  ugc:        "PRO",
+  brief:      "PRO",
+  storyboard: "SCALE",
+};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -55,11 +78,13 @@ const PLATFORM_CONFIG: Record<string, { label: string; dotClass: string }> = {
   YOUTUBE:   { label: "YouTube",   dotClass: "bg-[#ff0000]" },
 };
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: "hooks",   label: "Alt Hooks",         icon: "⚡" },
-  { id: "scripts", label: "Script Variations",  icon: "📄" },
-  { id: "adcopy",  label: "Ad Copy Sets",       icon: "✍️" },
-  { id: "brief",   label: "Creative Brief",     icon: "📋" },
+const TABS: { id: TabId; label: string; icon: string; badge?: string }[] = [
+  { id: "hooks",       label: "Alt Hooks",         icon: "⚡" },
+  { id: "scripts",     label: "Script Variations",  icon: "📄" },
+  { id: "adcopy",      label: "Ad Copy Sets",       icon: "✍️" },
+  { id: "ugc",         label: "UGC Scripts",        icon: "📱" },
+  { id: "brief",       label: "Creative Brief",     icon: "📋" },
+  { id: "storyboard",  label: "Storyboard",         icon: "🎬", badge: "SCALE" },
 ];
 
 const TAB_META: Record<TabId, {
@@ -117,6 +142,30 @@ const TAB_META: Record<TabId, {
     generatingText: "Forging brief...",
     cost:           "1 credit",
     endpoint:       "brief",
+  },
+  ugc: {
+    title:          "Generate 3 UGC Scripts",
+    description:    "Authentic creator scripts with different personas, angles, and emotional arcs — ready to send to talent.",
+    bullets: [
+      "3 creator personas with distinct voice, casting, and angle (honest review, storytime, day-in-my-life...)",
+      "Section-by-section spoken text, camera direction, b-roll, and text overlays",
+      "Creator notes: tone, pacing, authenticity cues, do-not list, audio suggestion",
+    ],
+    generatingText: "Forging UGC scripts...",
+    cost:           "1 credit",
+    endpoint:       "ugc",
+  },
+  storyboard: {
+    title:          "Generate Visual Storyboard",
+    description:    "A frame-by-frame production plan a video editor or UGC creator can follow without reading paragraphs.",
+    bullets: [
+      "6–10 frames with exact shot type, camera angle, action, dialogue, and text overlay",
+      "Color-coded elements: dialogue, text overlays, music cues, camera direction",
+      "Full production notes — lighting, wardrobe, props, location, equipment",
+    ],
+    generatingText: "Forging storyboard...",
+    cost:           "2 credits",
+    endpoint:       "storyboard",
   },
 };
 
@@ -196,8 +245,15 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
   const [credits, setCredits]             = useState(creditsRemaining);
   const [toast, setToast]                 = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade]     = useState(false);
+  const [showScaleUpgrade, setShowScaleUpgrade] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState<TabId | null>(null);
   const [expandedScripts, setExpandedScripts] = useState<Set<number>>(new Set());
+  const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);
+  const [sendBriefPrefill, setSendBriefPrefill] = useState<{
+    briefType:    string;
+    briefContent: unknown;
+    adId?:        string;
+  } | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const platform  = PLATFORM_CONFIG[ad.platform] ?? { label: ad.platform, dotClass: "bg-muted" };
@@ -234,15 +290,21 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
 
       const data = await res.json() as Record<string, unknown>;
 
-      // Update cached results
-      setResults((prev) => ({
-        ...prev,
-        [tab]: data[tab === "adcopy" ? "copies" : tab === "brief" ? "brief" : tab === "hooks" ? "hooks" : "scripts"],
-      }));
+      // Map endpoint response key → TabId
+      const resultKey =
+        tab === "adcopy"     ? "copies"     :
+        tab === "brief"      ? "brief"      :
+        tab === "hooks"      ? "hooks"      :
+        tab === "storyboard" ? "storyboard" :
+        tab === "ugc"        ? "scripts"    :
+        "scripts";
 
-      // Decrement credits locally
+      setResults((prev) => ({ ...prev, [tab]: data[resultKey] }));
+
+      // Decrement credits locally by actual cost
       if (!isUnlimited) {
-        setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
+        const cost = TAB_CREDIT_COST[tab] ?? 1;
+        setCredits((prev) => (prev !== null ? Math.max(0, prev - cost) : null));
       }
     } catch (err) {
       setErrors((prev) => ({
@@ -260,8 +322,23 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
       setShowUpgrade(true);
       return;
     }
-    // Low credit warning (< 5)
+    // SCALE gate for storyboard
+    const requiredRole = TAB_MIN_ROLE[tab] ?? "PRO";
+    const ROLE_ORDER = ["FREE", "PRO", "SCALE", "AGENCY"];
+    const userIdx = ROLE_ORDER.indexOf(userRole);
+    const reqIdx  = ROLE_ORDER.indexOf(requiredRole);
+    if (userIdx < reqIdx) {
+      setShowScaleUpgrade(true);
+      return;
+    }
+    // Low credit warning — threshold based on tab cost
+    const cost = TAB_CREDIT_COST[tab] ?? 1;
     if (!isUnlimited && credits !== null && credits < 5) {
+      setPendingConfirm(tab);
+      return;
+    }
+    // Not enough credits for this specific action
+    if (!isUnlimited && credits !== null && credits < cost) {
       setPendingConfirm(tab);
       return;
     }
@@ -381,6 +458,13 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
               >
                 <span>{tab.icon}</span>
                 {tab.label}
+                {tab.badge && (
+                  <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide ${
+                    isActive ? "bg-white/20 text-white" : "bg-accent/15 text-accent"
+                  }`}>
+                    {tab.badge}
+                  </span>
+                )}
                 {/* Green dot if result cached */}
                 {hasData && !isActive && (
                   <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-success border border-background" />
@@ -413,10 +497,12 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
               {/* Regenerate bar */}
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground font-mono">
-                  {activeTab === "hooks"   && `${results.hooks?.length ?? 0} hooks generated`}
-                  {activeTab === "scripts" && `${results.scripts?.length ?? 0} scripts generated`}
-                  {activeTab === "adcopy"  && `${results.adcopy?.length ?? 0} copy sets generated`}
-                  {activeTab === "brief"   && "Brief generated"}
+                  {activeTab === "hooks"       && `${results.hooks?.length ?? 0} hooks generated`}
+                  {activeTab === "scripts"     && `${results.scripts?.length ?? 0} scripts generated`}
+                  {activeTab === "adcopy"      && `${results.adcopy?.length ?? 0} copy sets generated`}
+                  {activeTab === "ugc"         && `${results.ugc?.length ?? 0} UGC scripts generated`}
+                  {activeTab === "brief"       && "Brief generated"}
+                  {activeTab === "storyboard"  && `${results.storyboard?.frames.length ?? 0} frames generated`}
                 </span>
                 <button
                   onClick={() => handleGenerate(activeTab)}
@@ -442,11 +528,37 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
               {activeTab === "adcopy" && results.adcopy && (
                 <AdCopyResults copies={results.adcopy} onCopy={copy} />
               )}
+              {activeTab === "ugc" && results.ugc && (
+                <UGCScriptResults
+                  scripts={results.ugc}
+                  adName={`${ad.brandName}${ad.productName ? ` · ${ad.productName}` : ""}`}
+                  onCopy={copy}
+                  onSendToCreator={() => setSendBriefPrefill({
+                    briefType:    "UGC_SCRIPT",
+                    briefContent: results.ugc,
+                    adId:         ad.id,
+                  })}
+                />
+              )}
               {activeTab === "brief" && results.brief && (
                 <BriefResult
                   brief={results.brief}
                   adName={`${ad.brandName}${ad.productName ? ` · ${ad.productName}` : ""}`}
                   onCopy={copy}
+                />
+              )}
+              {activeTab === "storyboard" && results.storyboard && (
+                <StoryboardResult
+                  storyboard={results.storyboard}
+                  adName={`${ad.brandName}${ad.productName ? ` · ${ad.productName}` : ""}`}
+                  selectedFrame={selectedFrameIndex}
+                  onSelectFrame={setSelectedFrameIndex}
+                  onCopy={copy}
+                  onSendToCreator={() => setSendBriefPrefill({
+                    briefType:    "STORYBOARD",
+                    briefContent: results.storyboard,
+                    adId:         ad.id,
+                  })}
                 />
               )}
             </div>
@@ -476,7 +588,7 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
           <h3 className="text-center font-bold text-foreground mb-2">Running low on credits</h3>
           <p className="text-center text-sm text-muted-foreground mb-6">
             You have <strong className="text-warning">{credits} credit{credits === 1 ? "" : "s"}</strong> remaining.
-            This will use 1 credit. Continue?
+            This will use <strong className="text-warning">{TAB_CREDIT_COST[pendingConfirm] ?? 1} credit{(TAB_CREDIT_COST[pendingConfirm] ?? 1) === 1 ? "" : "s"}</strong>. Continue?
           </p>
           <div className="flex gap-3">
             <button
@@ -495,7 +607,7 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
         </Modal>
       )}
 
-      {/* ── Upgrade modal ──────────────────────────────────────────────────── */}
+      {/* ── Upgrade modal (PRO) ────────────────────────────────────────────── */}
       {showUpgrade && (
         <Modal onClose={() => setShowUpgrade(false)}>
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-3xl mx-auto mb-4">
@@ -522,6 +634,43 @@ export function RemixView({ ad, userRole, creditsRemaining, creditsTotal }: Remi
             </Link>
           </div>
         </Modal>
+      )}
+
+      {/* ── Upgrade modal (SCALE — storyboard) ─────────────────────────────── */}
+      {showScaleUpgrade && (
+        <Modal onClose={() => setShowScaleUpgrade(false)}>
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-500/15 text-3xl mx-auto mb-4">
+            🎬
+          </div>
+          <h3 className="text-center font-bold text-foreground text-lg mb-2">
+            Storyboard is a SCALE feature
+          </h3>
+          <p className="text-center text-sm text-muted-foreground mb-6">
+            Upgrade to SCALE to generate frame-by-frame visual storyboards your creators can shoot from directly.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowScaleUpgrade(false)}
+              className="flex-1 btn-secondary"
+            >
+              Maybe later
+            </button>
+            <Link
+              href="/pricing"
+              className="flex-1 text-center rounded-lg bg-gradient-to-r from-purple-600 to-purple-400 px-4 py-2 text-sm font-semibold text-white shadow-[0_0_16px_rgba(168,85,247,0.3)] hover:shadow-[0_0_24px_rgba(168,85,247,0.5)] transition-all"
+            >
+              Upgrade to SCALE →
+            </Link>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Send Brief Modal (Creator Marketplace) ─────────────────────────── */}
+      {sendBriefPrefill && (
+        <BrowseCreatorsPrompt
+          prefill={sendBriefPrefill}
+          onClose={() => setSendBriefPrefill(null)}
+        />
       )}
     </div>
   );
@@ -798,6 +947,226 @@ function AdCopyResults({
   );
 }
 
+// ─── UGC script results ───────────────────────────────────────────────────────
+
+const UGC_SECTION_COLORS: Record<string, string> = {
+  HOOK_TO_CAMERA:         "bg-accent/15 text-accent border-accent/30",
+  PROBLEM_STORY:          "bg-danger/15 text-danger border-danger/30",
+  RELATABLE_MOMENT:       "bg-purple-500/15 text-purple-400 border-purple-500/30",
+  PRODUCT_REVEAL:         "bg-success/15 text-success border-success/30",
+  DEMO_USAGE:             "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  RESULTS_PROOF:          "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  SOCIAL_PROOF:           "bg-warning/15 text-warning border-warning/30",
+  COMPARISON:             "bg-pink-500/15 text-pink-400 border-pink-500/30",
+  LIFESTYLE_INTEGRATION:  "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  CTA_NATURAL:            "bg-primary/15 text-primary border-primary/30",
+  CTA_URGENT:             "bg-orange-500/15 text-orange-400 border-orange-500/30",
+};
+
+function buildUGCFullText(script: UGCOutput[number]): string {
+  return script.sections.map((s) => {
+    const lines = [
+      `[${s.timestamp}] ${s.type}`,
+      `SPOKEN: ${s.spoken}`,
+      s.direction ? `DIRECTION: ${s.direction}` : null,
+      s.bRoll     ? `B-ROLL: ${s.bRoll}` : null,
+      s.textOverlay ? `TEXT OVERLAY: ${s.textOverlay}` : null,
+    ].filter(Boolean);
+    return lines.join("\n");
+  }).join("\n\n");
+}
+
+function buildUGCSpokenOnly(script: UGCOutput[number]): string {
+  return script.sections
+    .filter((s) => s.spoken)
+    .map((s) => s.spoken)
+    .join(" ");
+}
+
+function UGCScriptResults({
+  scripts, adName, onCopy, onSendToCreator,
+}: {
+  scripts:          UGCOutput;
+  adName:           string;
+  onCopy:           (text: string, label?: string) => void;
+  onSendToCreator?: () => void;
+}) {
+  const [activeScript, setActiveScript] = useState(0);
+  const script = scripts[activeScript] ?? scripts[0];
+
+  if (!script) return null;
+
+  return (
+    <div className="space-y-3 animate-fade-in">
+      {/* Creator persona selector */}
+      <div className="flex gap-2 flex-wrap">
+        {scripts.map((s, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveScript(i)}
+            className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-left transition-all ${
+              i === activeScript
+                ? "border-accent bg-accent/10"
+                : "border-border bg-surface hover:border-accent/40"
+            }`}
+          >
+            <span className="text-lg">📱</span>
+            <div>
+              <p className={`text-xs font-semibold leading-tight ${i === activeScript ? "text-accent" : "text-foreground"}`}>
+                Script {i + 1}
+              </p>
+              <p className="text-[10px] text-muted-foreground leading-tight max-w-[160px] truncate">
+                {s.angle}
+              </p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Script card */}
+      <div className="rounded-xl border border-border bg-surface overflow-hidden">
+        {/* Creator header */}
+        <div className="px-5 py-4 border-b border-border bg-surface-2 flex items-start justify-between gap-4">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${ANGLE_COLORS[activeScript % ANGLE_COLORS.length]}`}>
+                {script.angle}
+              </span>
+              <span className="text-[10px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                {script.platform} · {script.estimatedDuration}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">{script.creatorType}</p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => onCopy(buildUGCSpokenOnly(script), "Spoken text copied!")}
+              className="btn-secondary h-7 px-2.5 text-[10px]"
+            >
+              Copy Spoken
+            </button>
+            <button
+              onClick={() => onCopy(buildUGCFullText(script), "Script copied!")}
+              className="btn-secondary h-7 px-2.5 text-[10px]"
+            >
+              Copy Full Script
+            </button>
+            {onSendToCreator && (
+              <button
+                onClick={onSendToCreator}
+                className="btn-secondary h-7 px-2.5 text-[10px]"
+              >
+                Send to Creator
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Section timeline */}
+        <div className="divide-y divide-border/50">
+          {script.sections.map((section, i) => {
+            const tagClass = UGC_SECTION_COLORS[section.type] ?? ANGLE_COLORS[i % ANGLE_COLORS.length];
+            return (
+              <div key={i} className="flex gap-4 px-5 py-4 hover:bg-surface-2/40 transition-colors">
+                {/* Timeline indicator */}
+                <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                  <span className="font-mono text-[10px] text-muted-foreground whitespace-nowrap">
+                    {section.timestamp}
+                  </span>
+                  {i < script.sections.length - 1 && (
+                    <div className="w-px flex-1 bg-border/60 min-h-[16px]" />
+                  )}
+                </div>
+
+                {/* Section content */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tagClass}`}>
+                    {section.type.replace(/_/g, " ")}
+                  </span>
+
+                  {/* Spoken text — chat bubble style */}
+                  <div className="rounded-xl rounded-tl-sm bg-surface-2 border border-border px-4 py-2.5">
+                    <p className="text-sm text-foreground leading-relaxed">
+                      &ldquo;{section.spoken}&rdquo;
+                    </p>
+                  </div>
+
+                  {/* Camera direction */}
+                  <p className="text-xs text-emerald-400 italic leading-relaxed">
+                    {section.direction}
+                  </p>
+
+                  {/* B-roll */}
+                  {section.bRoll && (
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-[10px] font-semibold text-muted shrink-0 mt-0.5">🎞 B-ROLL</span>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">{section.bRoll}</p>
+                    </div>
+                  )}
+
+                  {/* Text overlay */}
+                  {section.textOverlay && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-semibold text-muted shrink-0">📝</span>
+                      <span className="rounded bg-surface-3 border border-orange-500/20 px-2 py-0.5 text-[11px] font-semibold text-orange-400">
+                        {section.textOverlay}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Creator notes */}
+        <div className="border-t border-border bg-surface-2/30 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-sm">🎬</span>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Creator Notes
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-0.5">Tone</p>
+              <p className="text-xs text-foreground-2 leading-relaxed">{script.creatorNotes.tone}</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-0.5">Pacing</p>
+              <p className="text-xs text-foreground-2 leading-relaxed">{script.creatorNotes.pacing}</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-1.5">Authenticity Cues</p>
+              <ul className="space-y-1">
+                {script.creatorNotes.authenticity_cues.map((cue, i) => (
+                  <li key={i} className="flex gap-1.5 text-[11px] text-success">
+                    <span className="shrink-0">✓</span> {cue}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-1.5">Do Not</p>
+              <ul className="space-y-1">
+                {script.creatorNotes.doNot.map((item, i) => (
+                  <li key={i} className="flex gap-1.5 text-[11px] text-danger">
+                    <span className="shrink-0">✕</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-0.5">🎵 Audio Suggestion</p>
+              <p className="text-xs text-foreground-2 leading-relaxed">{script.creatorNotes.audioSuggestion}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Brief result ─────────────────────────────────────────────────────────────
 
 function BriefResult({
@@ -993,7 +1362,405 @@ function BriefField({ label, value }: { label: string; value: string }) {
   );
 }
 
+// ─── Storyboard result ────────────────────────────────────────────────────────
+
+const SHOT_TYPE_ICONS: Record<string, string> = {
+  "Close-up":           "🔍",
+  "Medium Shot":        "🎥",
+  "Wide Shot":          "🌅",
+  "POV":                "👁",
+  "Over-the-Shoulder":  "🤳",
+  "Reaction Shot":      "😮",
+  "B-roll":             "🎞",
+  "Product Demo":       "📦",
+  "Text-Only":          "📝",
+};
+
+function buildStoryboardText(sb: StoryboardOutput, adName: string): string {
+  const hr1 = "=".repeat(60);
+  const hr2 = "-".repeat(40);
+  const lines: string[] = [
+    `VISUAL STORYBOARD — ${adName}`,
+    `${sb.title}`,
+    hr1, "",
+    `Total Duration: ${sb.totalDuration}  ·  Aspect Ratio: ${sb.aspectRatio}`,
+    "", hr2,
+  ];
+
+  for (const f of sb.frames) {
+    lines.push(
+      ``,
+      `FRAME ${f.frameNumber}  [${f.timestamp}]  ${f.duration}`,
+      hr2,
+      `Shot Type:    ${f.shotType}`,
+      `Camera:       ${f.cameraAngle}`,
+      `Action:       ${f.action}`,
+      f.dialogue     ? `Dialogue:     "${f.dialogue}"` : `Dialogue:     (silent)`,
+      f.textOverlay  ? `Text Overlay: "${f.textOverlay}"${f.textPosition ? ` (${f.textPosition})` : ""}` : `Text Overlay: (none)`,
+      `Music:        ${f.musicMood}`,
+      `Transition:   ${f.transitionTo}`,
+      `Notes:        ${f.notes}`,
+    );
+  }
+
+  lines.push(
+    "", hr1,
+    "PRODUCTION NOTES", hr2,
+    `Lighting:       ${sb.productionNotes.lighting}`,
+    `Wardrobe:       ${sb.productionNotes.wardrobe}`,
+    `Props:          ${sb.productionNotes.props.join(", ")}`,
+    `Location:       ${sb.productionNotes.location}`,
+    `Equipment:      ${sb.productionNotes.equipment}`,
+    `Editing Style:  ${sb.productionNotes.editingStyle}`,
+    `Music:          ${sb.productionNotes.musicSuggestion}`,
+    "", hr1,
+    `Generated by Adslack Forge Remix · ${new Date().toLocaleDateString()}`,
+  );
+
+  return lines.join("\n");
+}
+
+function exportStoryboardPDF(sb: StoryboardOutput, adName: string): void {
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${sb.title}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1a1a1a; padding: 40px; max-width: 900px; margin: auto; }
+    h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .meta { font-size: 12px; color: #666; margin-bottom: 24px; }
+    .frame { page-break-inside: avoid; border: 1px solid #e5e5e5; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .frame-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .frame-num { width: 28px; height: 28px; border-radius: 50%; background: #f97316; color: white; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .frame-ts { font-size: 11px; color: #666; }
+    .frame-shot { font-size: 11px; font-weight: 600; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 99px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+    .field label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #999; display: block; margin-bottom: 2px; }
+    .field p { font-size: 12px; line-height: 1.5; }
+    .dialogue { color: #1565c0; font-style: italic; }
+    .overlay  { color: #e65100; }
+    .music    { color: #6a1b9a; }
+    .notes    { grid-column: 1 / -1; }
+    .prod-notes { border: 1px solid #e5e5e5; border-radius: 10px; padding: 16px; margin-top: 24px; }
+    .prod-notes h2 { font-size: 14px; margin-bottom: 12px; }
+    .prod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+    .footer { font-size: 10px; color: #999; margin-top: 32px; text-align: center; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <h1>${sb.title}</h1>
+  <p class="meta">${adName} · ${sb.totalDuration} · ${sb.aspectRatio}</p>
+  ${sb.frames.map((f) => `
+  <div class="frame">
+    <div class="frame-header">
+      <div class="frame-num">${f.frameNumber}</div>
+      <span class="frame-ts">${f.timestamp} · ${f.duration}</span>
+      <span class="frame-shot">${f.shotType}</span>
+    </div>
+    <div class="grid">
+      <div class="field"><label>Camera</label><p>${f.cameraAngle}</p></div>
+      <div class="field"><label>Transition</label><p>${f.transitionTo}</p></div>
+      <div class="field notes"><label>Action</label><p>${f.action}</p></div>
+      ${f.dialogue ? `<div class="field notes"><label>Dialogue</label><p class="dialogue">"${f.dialogue}"</p></div>` : ""}
+      ${f.textOverlay ? `<div class="field"><label>Text Overlay</label><p class="overlay">"${f.textOverlay}"${f.textPosition ? ` (${f.textPosition})` : ""}</p></div>` : ""}
+      <div class="field"><label>Music</label><p class="music">${f.musicMood}</p></div>
+      <div class="field notes"><label>Director Notes</label><p>${f.notes}</p></div>
+    </div>
+  </div>`).join("")}
+  <div class="prod-notes">
+    <h2>Production Notes</h2>
+    <div class="prod-grid">
+      <div class="field"><label>Lighting</label><p>${sb.productionNotes.lighting}</p></div>
+      <div class="field"><label>Wardrobe</label><p>${sb.productionNotes.wardrobe}</p></div>
+      <div class="field"><label>Props</label><p>${sb.productionNotes.props.join(", ")}</p></div>
+      <div class="field"><label>Location</label><p>${sb.productionNotes.location}</p></div>
+      <div class="field"><label>Equipment</label><p>${sb.productionNotes.equipment}</p></div>
+      <div class="field"><label>Editing Style</label><p>${sb.productionNotes.editingStyle}</p></div>
+      <div class="field" style="grid-column:1/-1"><label>Music Suggestion</label><p class="music">${sb.productionNotes.musicSuggestion}</p></div>
+    </div>
+  </div>
+  <p class="footer">Generated by Adslack Forge Remix · ${new Date().toLocaleDateString()}</p>
+</body>
+</html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
+}
+
+function StoryboardResult({
+  storyboard, adName, selectedFrame, onSelectFrame, onCopy, onSendToCreator,
+}: {
+  storyboard:       StoryboardOutput;
+  adName:           string;
+  selectedFrame:    number;
+  onSelectFrame:    (i: number) => void;
+  onCopy:           (text: string, label?: string) => void;
+  onSendToCreator?: () => void;
+}) {
+  const frame = storyboard.frames[selectedFrame] ?? storyboard.frames[0];
+
+  return (
+    <div className="rounded-xl border border-border bg-surface overflow-hidden animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-border bg-surface-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="text-lg shrink-0">🎬</span>
+          <div className="min-w-0">
+            <h3 className="font-bold text-foreground text-sm truncate">{storyboard.title}</h3>
+            <p className="text-[10px] text-muted-foreground">
+              {storyboard.totalDuration} · {storyboard.aspectRatio} · {storyboard.frames.length} frames
+            </p>
+          </div>
+        </div>
+        {/* Export actions */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => onCopy(buildStoryboardText(storyboard, adName), "Storyboard copied!")}
+            className="btn-secondary h-7 px-2.5 text-[11px]"
+          >
+            Copy Text
+          </button>
+          <button
+            onClick={() => exportStoryboardPDF(storyboard, adName)}
+            className="btn-secondary h-7 px-2.5 text-[11px]"
+          >
+            ↓ PDF
+          </button>
+          <button
+            onClick={onSendToCreator}
+            className="btn-secondary h-7 px-2.5 text-[11px]"
+          >
+            Send to Creator
+          </button>
+        </div>
+      </div>
+
+      {/* ── Filmstrip ──────────────────────────────────────────────────────── */}
+      <div className="overflow-x-auto border-b border-border bg-surface-2/40 px-4 py-3">
+        <div className="flex gap-2 w-max">
+          {storyboard.frames.map((f, i) => {
+            const isSelected = i === selectedFrame;
+            const icon = SHOT_TYPE_ICONS[f.shotType] ?? "🎥";
+            return (
+              <button
+                key={f.frameNumber}
+                onClick={() => onSelectFrame(i)}
+                className={`flex flex-col items-center gap-1 rounded-lg border p-2.5 w-[72px] shrink-0 transition-all ${
+                  isSelected
+                    ? "border-accent bg-accent/10 shadow-[0_0_10px_rgba(249,115,22,0.2)]"
+                    : "border-border bg-surface hover:border-accent/40"
+                }`}
+              >
+                <span className="text-base leading-none">{icon}</span>
+                <span className={`text-[11px] font-bold ${isSelected ? "text-accent" : "text-muted-foreground"}`}>
+                  {f.frameNumber}
+                </span>
+                <span className="text-[9px] text-muted leading-tight text-center">{f.timestamp}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Selected frame detail ──────────────────────────────────────────── */}
+      {frame && (
+        <div className="p-5 space-y-4">
+          {/* Frame header */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-white text-sm font-bold">
+              {frame.frameNumber}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">{frame.timestamp} · {frame.duration}</p>
+              <p className="text-xs text-muted-foreground">{frame.cameraAngle}</p>
+            </div>
+            <span className="ml-auto rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-400">
+              {frame.shotType}
+            </span>
+          </div>
+
+          {/* Action */}
+          <FrameField label="Action" color="text-foreground-2">
+            {frame.action}
+          </FrameField>
+
+          {/* Dialogue */}
+          {frame.dialogue && (
+            <FrameField label="🗣 Dialogue" color="text-blue-400">
+              &ldquo;{frame.dialogue}&rdquo;
+            </FrameField>
+          )}
+
+          {/* Text overlay */}
+          {frame.textOverlay && (
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-1">
+                📝 Text Overlay
+                {frame.textPosition && (
+                  <span className="ml-2 rounded bg-surface-2 px-1.5 py-0.5 normal-case tracking-normal text-muted font-normal">
+                    {frame.textPosition}
+                  </span>
+                )}
+              </p>
+              <p className="text-sm font-semibold text-orange-400 leading-relaxed">
+                &ldquo;{frame.textOverlay}&rdquo;
+              </p>
+            </div>
+          )}
+
+          {/* Music & Transition row */}
+          <div className="grid grid-cols-2 gap-4">
+            <FrameField label="🎵 Music Mood" color="text-purple-400">
+              {frame.musicMood}
+            </FrameField>
+            <FrameField label="✂️ Transition" color="text-muted-foreground">
+              {frame.transitionTo}
+            </FrameField>
+          </div>
+
+          {/* Director notes */}
+          <FrameField label="🎬 Director Notes" color="text-muted-foreground italic">
+            {frame.notes}
+          </FrameField>
+
+          {/* Frame nav */}
+          <div className="flex items-center justify-between pt-1">
+            <button
+              disabled={selectedFrame === 0}
+              onClick={() => onSelectFrame(selectedFrame - 1)}
+              className="btn-secondary h-7 px-3 text-[11px] disabled:opacity-30"
+            >
+              ← Prev Frame
+            </button>
+            <span className="text-xs text-muted-foreground">
+              {selectedFrame + 1} / {storyboard.frames.length}
+            </span>
+            <button
+              disabled={selectedFrame === storyboard.frames.length - 1}
+              onClick={() => onSelectFrame(selectedFrame + 1)}
+              className="btn-secondary h-7 px-3 text-[11px] disabled:opacity-30"
+            >
+              Next Frame →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Production notes ──────────────────────────────────────────────── */}
+      <div className="border-t border-border bg-surface-2/30 p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm">🎯</span>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Production Notes
+          </h4>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <ProdNoteField label="💡 Lighting"     value={storyboard.productionNotes.lighting} />
+          <ProdNoteField label="👗 Wardrobe"     value={storyboard.productionNotes.wardrobe} />
+          <ProdNoteField label="📍 Location"     value={storyboard.productionNotes.location} />
+          <ProdNoteField label="📷 Equipment"    value={storyboard.productionNotes.equipment} />
+          <div className="sm:col-span-2">
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-1.5">🎒 Props Needed</p>
+            <div className="flex flex-wrap gap-1.5">
+              {storyboard.productionNotes.props.map((prop, i) => (
+                <span key={i} className="rounded-md border border-border bg-surface px-2 py-0.5 text-xs text-foreground-2">
+                  {prop}
+                </span>
+              ))}
+            </div>
+          </div>
+          <ProdNoteField label="✂️ Editing Style"    value={storyboard.productionNotes.editingStyle} />
+          <ProdNoteField label="🎵 Music Suggestion" value={storyboard.productionNotes.musicSuggestion} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FrameField({
+  label, color, children,
+}: {
+  label:    string;
+  color:    string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-1">{label}</p>
+      <p className={`text-sm leading-relaxed ${color}`}>{children}</p>
+    </div>
+  );
+}
+
+function ProdNoteField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[9px] font-semibold uppercase tracking-widest text-muted mb-0.5">{label}</p>
+      <p className="text-xs text-foreground-2 leading-relaxed">{value}</p>
+    </div>
+  );
+}
+
 // ─── Modal wrapper ────────────────────────────────────────────────────────────
+
+// ─── Browse Creators Prompt ───────────────────────────────────────────────────
+
+function BrowseCreatorsPrompt({
+  prefill,
+  onClose,
+}: {
+  prefill:  { briefType: string; briefContent: unknown; adId?: string };
+  onClose:  () => void;
+}) {
+  const BRIEF_LABELS: Record<string, string> = {
+    STORYBOARD:     "Storyboard",
+    UGC_SCRIPT:     "UGC Script",
+    CREATIVE_BRIEF: "Creative Brief",
+    CUSTOM:         "Custom Brief",
+  };
+  const label = BRIEF_LABELS[prefill.briefType] ?? "Brief";
+
+  const handleBrowse = () => {
+    // Store the brief in sessionStorage so CreatorProfile can pre-populate SendBriefModal
+    try {
+      sessionStorage.setItem("pendingBrief", JSON.stringify(prefill));
+    } catch { /* ignore */ }
+    onClose();
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/15 text-2xl mx-auto mb-4">
+        🎬
+      </div>
+      <h3 className="text-center font-bold text-foreground mb-2">Send {label} to a Creator</h3>
+      <p className="text-center text-sm text-muted-foreground mb-6">
+        Browse the Creator Marketplace and click <strong>Send Brief</strong> on any profile to attach your {label}.
+      </p>
+      <div className="flex gap-3">
+        <button onClick={onClose} className="flex-1 btn-secondary">
+          Cancel
+        </button>
+        <Link
+          href={"/creators" as Route}
+          onClick={handleBrowse}
+          className="flex-1 text-center rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90 transition-colors"
+        >
+          Browse Creators →
+        </Link>
+      </div>
+    </Modal>
+  );
+}
+
+// ─── Modal shell ──────────────────────────────────────────────────────────────
 
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (

@@ -207,6 +207,27 @@ function buildBriefText(ad: AdDetail, anatomy: AnatomyData): string {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+// ── AdSaturation types (local, matching API shape) ───────────────────────────
+
+interface SimilarAdItem {
+  id:              string;
+  brandName:       string;
+  similarityScore: number;
+  similarityType:  string;
+  hookText:        string | null;
+  thumbnailUrl:    string | null;
+  niche:           string;
+}
+
+interface AdSaturationData {
+  adId:                    string;
+  saturationScore:         number;
+  level:                   { label: string; color: string };
+  duplicateCount:          number;
+  duplicateAdvertiserCount: number;
+  similarAds:              SimilarAdItem[];
+}
+
 // ── ProductInsight types (local, matching API shape) ──────────────────────────
 
 interface ProductInsightData {
@@ -231,6 +252,7 @@ export function AdDetailView({ ad, latestMetrics, initialAnatomy }: AdDetailView
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [productInsight, setProductInsight] = useState<ProductInsightData | null | "loading">("loading");
+  const [saturation, setSaturation] = useState<AdSaturationData | null | "loading">("loading");
 
   useEffect(() => {
     let cancelled = false;
@@ -238,6 +260,15 @@ export function AdDetailView({ ad, latestMetrics, initialAnatomy }: AdDetailView
       .then((r) => r.ok ? r.json() as Promise<{ data: ProductInsightData | null }> : null)
       .then((json) => { if (!cancelled) setProductInsight(json?.data ?? null); })
       .catch(() => { if (!cancelled) setProductInsight(null); });
+    return () => { cancelled = true; };
+  }, [ad.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/ads/${ad.id}/saturation`)
+      .then((r) => r.ok ? r.json() as Promise<AdSaturationData> : null)
+      .then((json) => { if (!cancelled) setSaturation(json ?? null); })
+      .catch(() => { if (!cancelled) setSaturation(null); });
     return () => { cancelled = true; };
   }, [ad.id]);
 
@@ -491,6 +522,39 @@ export function AdDetailView({ ad, latestMetrics, initialAnatomy }: AdDetailView
             <div className="rounded-xl border border-dashed border-border bg-surface/50 p-6 text-center">
               <p className="text-sm text-muted">
                 No lifecycle data yet — product matching runs every 12 hours.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* ── Saturation Analysis card ─────────────────────────────────── */}
+        <section>
+          <div className="mb-4 flex items-center gap-2.5">
+            <div className="h-4 w-0.5 rounded-full bg-orange-400" />
+            <h2 className="text-base font-bold text-foreground">Saturation Analysis</h2>
+            <span className="rounded-full bg-orange-400/15 px-2 py-0.5 text-[10px] font-semibold text-orange-400">
+              Market
+            </span>
+          </div>
+
+          {saturation === "loading" ? (
+            <div className="rounded-xl border border-border bg-surface p-5 animate-pulse">
+              <div className="flex gap-4 mb-4">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="space-y-1.5">
+                    <div className="h-6 w-10 rounded bg-surface-3" />
+                    <div className="h-3 w-16 rounded bg-surface-3" />
+                  </div>
+                ))}
+              </div>
+              <div className="h-2 w-full rounded-full bg-surface-3" />
+            </div>
+          ) : saturation ? (
+            <SaturationAnalysisCard saturation={saturation} adId={ad.id} />
+          ) : (
+            <div className="rounded-xl border border-dashed border-border bg-surface/50 p-6 text-center">
+              <p className="text-sm text-muted">
+                No saturation data yet — analysis runs every 12 hours.
               </p>
             </div>
           )}
@@ -808,6 +872,140 @@ function InfoCard({ label, value, icon }: { label: string; value: string; icon: 
         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">{label}</span>
       </div>
       <p className="text-sm font-medium text-foreground-2">{value}</p>
+    </div>
+  );
+}
+
+// ── Saturation Analysis Card ───────────────────────────────────────────────────
+
+const SIMILARITY_TYPE_LABEL: Record<string, string> = {
+  HOOK_TEXT:        "Hook text",
+  SCRIPT_STRUCTURE: "Script structure",
+  PRODUCT_MATCH:    "Product match",
+  LANDING_PAGE:     "Same landing page",
+};
+
+function SaturationAnalysisCard({ saturation, adId }: { saturation: AdSaturationData; adId: string }) {
+  const score = saturation.saturationScore;
+  const isHighRisk = score >= 71;
+  const isModerate = score >= 46 && score < 71;
+
+  return (
+    <div className={`rounded-xl border p-5 ${
+      isHighRisk ? "border-red-500/30 bg-red-500/5" :
+      isModerate ? "border-orange-400/30 bg-orange-400/5" :
+      "border-border bg-surface"
+    }`}>
+      {/* Header */}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-1">
+              <span className="font-mono text-3xl font-bold text-foreground leading-none">{score}</span>
+              <span className="font-mono text-sm text-muted">/100</span>
+            </div>
+            <span className={`text-xs font-semibold mt-0.5 ${saturation.level.color}`}>
+              {saturation.level.label}
+            </span>
+          </div>
+          {/* Score bar */}
+          <div className="flex-1 min-w-[120px]">
+            <div className="h-2 w-full rounded-full bg-surface-3 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  score <= 20  ? "bg-emerald-400" :
+                  score <= 45  ? "bg-blue-400"    :
+                  score <= 70  ? "bg-amber-400"   :
+                  score <= 90  ? "bg-orange-400"  :
+                                 "bg-red-500"
+                }`}
+                style={{ width: `${score}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="flex gap-4 text-right shrink-0">
+          <div>
+            <p className="font-mono text-lg font-bold text-foreground">{saturation.duplicateCount}</p>
+            <p className="text-[10px] text-muted">Similar ads</p>
+          </div>
+          <div>
+            <p className="font-mono text-lg font-bold text-foreground">{saturation.duplicateAdvertiserCount}</p>
+            <p className="text-[10px] text-muted">Advertisers</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Warning banner */}
+      {isHighRisk && (
+        <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-xs text-red-300">
+          ⚠ High duplication detected. {saturation.duplicateAdvertiserCount} advertisers are running similar creative. Consider a differentiated hook or angle.
+        </div>
+      )}
+      {isModerate && !isHighRisk && (
+        <div className="mb-4 rounded-lg border border-orange-400/30 bg-orange-400/10 px-3 py-2.5 text-xs text-orange-300">
+          This market is getting crowded. Monitor performance closely and consider creative refreshes.
+        </div>
+      )}
+
+      {/* Similar ads preview */}
+      {saturation.similarAds.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold text-muted uppercase tracking-wide mb-2">
+            Similar Ads Detected
+          </p>
+          <div className="space-y-2">
+            {saturation.similarAds.slice(0, 5).map((sim) => (
+              <Link
+                key={sim.id}
+                href={`/ads/${sim.id}` as `/ads/${string}`}
+                className="flex items-center gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2 hover:border-border-hover hover:bg-surface-3 transition-colors"
+              >
+                {sim.thumbnailUrl ? (
+                  <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-surface-3">
+                    <Image src={sim.thumbnailUrl} alt="" fill className="object-cover" sizes="32px" />
+                  </div>
+                ) : (
+                  <div className="h-8 w-8 shrink-0 rounded bg-surface-3 flex items-center justify-center text-xs text-muted">◻</div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-foreground">{sim.brandName}</p>
+                  {sim.hookText && (
+                    <p className="truncate text-[10px] text-muted italic">&ldquo;{sim.hookText}&rdquo;</p>
+                  )}
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="font-mono text-xs text-orange-400">{Math.round(sim.similarityScore * 100)}%</p>
+                  <p className="text-[10px] text-muted">{SIMILARITY_TYPE_LABEL[sim.similarityType] ?? sim.similarityType}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+          {saturation.duplicateCount > 5 && (
+            <Link
+              href={`/ads/${adId}/duplicates` as `/ads/${string}/duplicates`}
+              className="mt-2 block text-xs text-muted hover:text-foreground transition-colors"
+            >
+              View all {saturation.duplicateCount} similar ads →
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Remix CTA when saturated */}
+      {score >= 46 && (
+        <div className="mt-4 flex items-center justify-between rounded-lg border border-accent/30 bg-accent/5 px-3 py-2.5">
+          <p className="text-xs text-muted">Differentiate with a fresh angle using Remix</p>
+          <Link
+            href={`/ads/${adId}/remix`}
+            className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent/90 transition-colors"
+          >
+            ⚡ Remix
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

@@ -200,6 +200,23 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
+      {/* Quick links */}
+      <section className="mb-8">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted">Tools</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <a
+            href="/admin/launch-checklist"
+            className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 hover:border-accent/40 hover:bg-surface-2 transition-all"
+          >
+            <span className="text-xl">🚀</span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Launch Checklist</p>
+              <p className="text-xs text-muted">Pre-launch verification checklist</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
       {/* Funnel summary */}
       <section>
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted">Conversion funnel</h2>

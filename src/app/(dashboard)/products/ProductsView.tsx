@@ -7,22 +7,26 @@ import type { LifecycleStage, TrendDirection } from "@/services/lifecycleEngine"
 
 // ── Filter state ──────────────────────────────────────────────────────────────
 
+type SaturationLevelFilter = "fresh" | "growing" | "crowded" | "saturated" | "oversaturated" | "";
+
 interface Filters {
-  stage: LifecycleStage | "";
-  niche: string;
-  platform: string;
-  trend: TrendDirection | "";
-  sort: "saturation" | "opps" | "adCount" | "newest";
-  page: number;
+  stage:           LifecycleStage | "";
+  niche:           string;
+  platform:        string;
+  trend:           TrendDirection | "";
+  saturationLevel: SaturationLevelFilter;
+  sort:            "saturation" | "opps" | "adCount" | "newest";
+  page:            number;
 }
 
 const DEFAULT_FILTERS: Filters = {
-  stage:    "",
-  niche:    "",
-  platform: "",
-  trend:    "",
-  sort:     "opps",
-  page:     0,
+  stage:           "",
+  niche:           "",
+  platform:        "",
+  trend:           "",
+  saturationLevel: "",
+  sort:            "opps",
+  page:            0,
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -52,6 +56,15 @@ const TRENDS: { value: TrendDirection | ""; label: string }[] = [
   { value: "DECLINING", label: "↓ Declining" },
 ];
 
+const SATURATION_LEVELS: { value: SaturationLevelFilter; label: string; color: string }[] = [
+  { value: "",             label: "All levels",   color: "" },
+  { value: "fresh",        label: "Fresh",        color: "text-emerald-400" },
+  { value: "growing",      label: "Growing",      color: "text-blue-400" },
+  { value: "crowded",      label: "Crowded",      color: "text-amber-400" },
+  { value: "saturated",    label: "Saturated",    color: "text-orange-400" },
+  { value: "oversaturated",label: "Oversaturated",color: "text-red-500" },
+];
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 interface ProductsResponse {
@@ -70,10 +83,11 @@ export function ProductsView() {
     setError(null);
     try {
       const params = new URLSearchParams();
-      if (f.stage)    params.set("stage",    f.stage);
-      if (f.niche)    params.set("niche",    f.niche);
-      if (f.platform) params.set("platform", f.platform);
-      if (f.trend)    params.set("trend",    f.trend);
+      if (f.stage)           params.set("stage",           f.stage);
+      if (f.niche)           params.set("niche",           f.niche);
+      if (f.platform)        params.set("platform",        f.platform);
+      if (f.trend)           params.set("trend",           f.trend);
+      if (f.saturationLevel) params.set("saturationLevel", f.saturationLevel);
       params.set("sort", f.sort);
       params.set("page", String(f.page));
 
@@ -142,6 +156,22 @@ export function ProductsView() {
             >
               {TRENDS.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+
+            {/* Saturation level filter */}
+            <select
+              value={filters.saturationLevel}
+              onChange={(e) => setFilter("saturationLevel", e.target.value as SaturationLevelFilter)}
+              className={[
+                "rounded-lg border bg-surface px-3 py-1.5 text-xs focus:outline-none",
+                filters.saturationLevel
+                  ? "border-orange-400/50 text-orange-300 focus:border-orange-400"
+                  : "border-border text-foreground focus:border-accent",
+              ].join(" ")}
+            >
+              {SATURATION_LEVELS.map((l) => (
+                <option key={l.value} value={l.value}>{l.label}</option>
               ))}
             </select>
 

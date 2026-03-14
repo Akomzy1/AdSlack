@@ -22,7 +22,7 @@ function isAuthRoute(pathname: string): boolean {
   return pathname.startsWith("/login") || pathname.startsWith("/signup");
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const token = await getToken({

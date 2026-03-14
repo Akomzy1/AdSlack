@@ -70,6 +70,8 @@ enum RemixType {
   ADCOPY
   BRIEF
   WIREFRAME
+  STORYBOARD
+  UGC
 }
 
 enum AlertFrequency {
@@ -96,6 +98,40 @@ enum TrendDirection {
   RISING
   STABLE
   DECLINING
+}
+
+enum PatternStatus {
+  EMERGING
+  TRENDING
+  PEAKED
+  FADING
+}
+
+enum AlertRuleType {
+  VELOCITY_ALERT
+  PATTERN_ALERT
+}
+
+enum BriefType {
+  CREATIVE_BRIEF
+  UGC_SCRIPT
+  STORYBOARD
+  CUSTOM
+}
+
+enum BriefStatus {
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
+enum SimilarityType {
+  HOOK_TEXT
+  SCRIPT_STRUCTURE
+  PRODUCT_MATCH
+  LANDING_PAGE
 }
 
 // ─── Auth (NextAuth adapter) ──────────────────────────────────────────────────
@@ -159,6 +195,8 @@ model User {
   alertRules    AlertRule[]
   notifications Notification[]
   usageLogs     UsageLog[]
+  creatorReviews CreatorReview[]
+  sentBriefs     SentBrief[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -207,6 +245,13 @@ model Ad {
   velocityTier       String   @default("STEADY") // EXPLOSIVE | HIGH | RISING | STEADY
   velocityUpdatedAt  DateTime?
 
+  // Saturation (cached from saturationEngine cron — updated every 12h)
+  saturationScore             Float?   // 0–100; null = not yet computed
+  duplicateCount              Int      @default(0)
+  duplicateAdvertiserCount    Int      @default(0)
+  hookTextHash                String?  // pre-computed token hash for similarity lookup
+  saturationUpdatedAt         DateTime?
+
   // Product Lifecycle
   productInsightId String?
   productInsight   ProductInsight? @relation(fields: [productInsightId], references: [id], onDelete: SetNull)
@@ -216,6 +261,8 @@ model Ad {
   remixes       Remix[]
   savedBy       SavedAd[]
   notifications Notification[]
+  duplicatesAsSource AdDuplicate[] @relation("DuplicateSource")
+  duplicatesAsTarget AdDuplicate[] @relation("DuplicateTarget")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -234,6 +281,9 @@ model Ad {
   @@index([niche, velocityScore])        // trending by niche
   @@index([isActive, velocityScore])     // live trending feed
   @@index([productInsightId])
+  @@index([saturationScore])
+  @@index([hookTextHash])
+  @@index([niche, saturationScore])
 }
 
 // ─── Product Lifecycle Tracker ────────────────────────────────────────────────
@@ -262,6 +312,56 @@ model ProductInsight {
   @@index([trendDirection])
   @@index([updatedAt])
   @@index([lifecycleStage, saturationScore])
+}
+
+// ─── Ad Duplication Tracking ─────────────────────────────────────────────────
+
+model AdDuplicate {
+  id              String         @id @default(cuid())
+  sourceAdId      String
+  duplicateAdId   String
+  similarityScore Float          // 0.0–1.0
+  similarityType  SimilarityType
+  detectedAt      DateTime       @default(now())
+
+  sourceAd    Ad @relation("DuplicateSource",  fields: [sourceAdId],    references: [id], onDelete: Cascade)
+  duplicateAd Ad @relation("DuplicateTarget",  fields: [duplicateAdId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceAdId, duplicateAdId, similarityType])
+  @@index([sourceAdId])
+  @@index([duplicateAdId])
+  @@index([similarityType])
+  @@index([detectedAt])
+  @@index([sourceAdId, similarityScore])
+}
+
+// ─── Creative Pattern Recognition ────────────────────────────────────────────
+
+model CreativePattern {
+  id                String        @id @default(cuid())
+  patternName       String        // e.g. "POV + Problem + Unexpected Solution"
+  hookType          String        // dominant hook type across ads
+  scriptStructure   String        // normalised formula e.g. "hook→problem→demo→cta"
+  adType            String        // VIDEO | IMAGE | CAROUSEL (most common)
+  emotionalTriggers Json          // string[] — most common triggers across ads
+  avgVelocity       Float         @default(0)
+  medianEngagement  Float         @default(0)
+  nicheSpread       Json          // string[] — niches where pattern appears
+  totalAdsUsing     Int           @default(0)
+  growthRate        Float         @default(0)   // week-over-week % change in totalAdsUsing
+  viralityScore     Float         @default(0)   // composite score
+  exampleAdIds      Json          // String[] — up to 5 representative ad IDs
+  status            PatternStatus @default(EMERGING)
+  firstDetectedAt   DateTime
+  lastUpdatedAt     DateTime      @updatedAt
+
+  alertRules AlertRule[]
+
+  @@index([status])
+  @@index([viralityScore])
+  @@index([status, viralityScore])
+  @@index([hookType])
+  @@index([lastUpdatedAt])
 }
 
 // ─── Ad Metrics (time-series) ─────────────────────────────────────────────────
@@ -365,17 +465,22 @@ model SavedAd {
 // ─── Alert Rules ──────────────────────────────────────────────────────────────
 
 model AlertRule {
-  id                String         @id @default(cuid())
+  id                String          @id @default(cuid())
   userId            String
-  name              String         // user-supplied label
-  niches            String[]       @default([]) // empty = all niches
-  platforms         String[]       @default([]) // empty = all platforms
-  velocityThreshold Float          @default(90) // 0–100 score
-  keywords          String?        // space-separated keywords matched against hookText/productName
-  frequency         AlertFrequency @default(INSTANT)
-  isActive          Boolean        @default(true)
-  lastCheckedAt     DateTime?      // updated by cron after each pass
-  emailLastSentAt   DateTime?      // rate-limit guard for digest emails
+  name              String          // user-supplied label
+  ruleType          AlertRuleType   @default(VELOCITY_ALERT)
+  niches            String[]        @default([]) // empty = all niches
+  platforms         String[]        @default([]) // empty = all platforms
+  velocityThreshold Float           @default(90) // 0–100 score
+  keywords          String?         // space-separated keywords matched against hookText/productName
+  frequency         AlertFrequency  @default(INSTANT)
+  isActive          Boolean         @default(true)
+  lastCheckedAt     DateTime?       // updated by cron after each pass
+  emailLastSentAt   DateTime?       // rate-limit guard for digest emails
+
+  // Pattern alert fields
+  patternId         String?
+  pattern           CreativePattern? @relation(fields: [patternId], references: [id], onDelete: SetNull)
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications Notification[]
@@ -385,6 +490,8 @@ model AlertRule {
 
   @@index([userId])
   @@index([isActive])
+  @@index([patternId])
+  @@index([ruleType])
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────
@@ -428,3 +535,85 @@ model UsageLog {
   @@index([userId, action])
   @@index([createdAt])
 }
+
+// ─── Creator Marketplace ──────────────────────────────────────────────────────
+
+model Creator {
+  id              String   @id @default(cuid())
+  name            String
+  profileImageUrl String?
+  bio             String?  @db.Text
+  email           String   @unique
+
+  platforms       String[] @default([]) // "TikTok" | "Instagram" | "YouTube Shorts"
+  niches          String[] @default([]) // "Beauty" | "Fitness" | "Kitchen" | "Tech" | "Pets" ...
+  contentStyles   String[] @default([]) // "UGC Review" | "Unboxing" | "Tutorial" | "Storytime" ...
+
+  priceRange      String   // e.g. "$50–$150 per video"
+  turnaroundDays  Int      @default(7)  // typical delivery days
+  portfolioUrls   String[] @default([]) // links to example content
+
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  completedBriefs Int      @default(0)
+
+  country         String   @default("US")
+  language        String   @default("en")
+
+  isVerified      Boolean  @default(false)
+  isAvailable     Boolean  @default(true)
+
+  reviews         CreatorReview[]
+  sentBriefs      SentBrief[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isAvailable])
+  @@index([isVerified])
+  @@index([rating])
+  @@index([turnaroundDays])
+}
+
+model CreatorReview {
+  id        String  @id @default(cuid())
+  creatorId String
+  userId    String
+  rating    Int     // 1–5
+  comment   String? @db.Text
+
+  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([creatorId, userId]) // one review per creator per user
+  @@index([creatorId])
+  @@index([userId])
+}
+
+model SentBrief {
+  id            String      @id @default(cuid())
+  userId        String
+  creatorId     String
+  adId          String?
+
+  briefType     BriefType
+  briefContent  Json        // the generated brief/script/storyboard data
+  customMessage String?     @db.Text
+  status        BriefStatus @default(SENT)
+  responseToken String      @unique @default(cuid()) // public token for creator response link
+
+  sentAt        DateTime    @default(now())
+  respondedAt   DateTime?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([creatorId])
+  @@index([status])
+  @@index([responseToken])
+}
+
+// ─── User relation extensions (back-references) ───────────────────────────────

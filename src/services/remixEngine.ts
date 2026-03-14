@@ -25,6 +25,7 @@ import {
   SCRIPTS_SYSTEM_PROMPT,
   ADCOPY_SYSTEM_PROMPT,
   BRIEF_SYSTEM_PROMPT,
+  UGC_SYSTEM_PROMPT,
 } from "@/constants/remixPrompts";
 
 // ─── Model ────────────────────────────────────────────────────────────────────
@@ -158,6 +159,41 @@ const CreativeBriefSchema = z.object({
 });
 
 export type CreativeBrief = z.infer<typeof CreativeBriefSchema>;
+
+// UGC Scripts -----------------------------------------------------------------
+
+const UGCSectionSchema = z.object({
+  timestamp:   z.string(),
+  type:        z.string(),
+  spoken:      z.string(),
+  direction:   z.string(),
+  bRoll:       z.string().nullable(),
+  textOverlay: z.string().nullable(),
+});
+
+const UGCCreatorNotesSchema = z.object({
+  tone:              z.string(),
+  pacing:            z.string(),
+  authenticity_cues: z.array(z.string()),
+  doNot:             z.array(z.string()),
+  audioSuggestion:   z.string(),
+});
+
+const UGCScriptSchema = z.object({
+  creatorType:       z.string(),
+  angle:             z.string(),
+  platform:          z.string(),
+  estimatedDuration: z.string(),
+  sections:          z.array(UGCSectionSchema).min(3),
+  creatorNotes:      UGCCreatorNotesSchema,
+});
+
+const UGCOutputSchema = z.array(UGCScriptSchema).min(1).max(3);
+
+export type UGCSection      = z.infer<typeof UGCSectionSchema>;
+export type UGCCreatorNotes = z.infer<typeof UGCCreatorNotesSchema>;
+export type UGCScript       = z.infer<typeof UGCScriptSchema>;
+export type UGCOutput       = z.infer<typeof UGCOutputSchema>;
 
 // ─── Shared engine result ─────────────────────────────────────────────────────
 
@@ -428,5 +464,47 @@ export async function generateCreativeBrief(
     BRIEF_SYSTEM_PROMPT,
     userPrompt,
     (raw) => CreativeBriefSchema.parse(raw),
+  );
+}
+
+/**
+ * Generate 3 UGC script variations with different creator personas and angles.
+ */
+export async function generateUGCScripts(
+  ad:      RemixAdInput,
+  anatomy: RemixAnatomyInput | null,
+  count:   number = 3,
+): Promise<RemixEngineResult<UGCOutput>> {
+  const context = buildAdContext(ad, anatomy);
+
+  const scriptContext: string[] = [];
+  if (anatomy?.fullScriptBreakdown?.length) {
+    scriptContext.push("", "=== ORIGINAL SCRIPT BREAKDOWN ===");
+    for (const line of anatomy.fullScriptBreakdown) {
+      scriptContext.push(`[${line.timestamp}] ${line.action} | "${line.text}"`);
+    }
+  }
+
+  const targetDuration = ad.duration
+    ? `${ad.duration} seconds`
+    : "30 seconds (assumed — no original duration)";
+
+  const userPrompt = [
+    context,
+    ...scriptContext,
+    "",
+    `Generate ${count} UGC script variations inspired by this winning ad.`,
+    `Target duration per script: ${targetDuration}.`,
+    `Platform: ${ad.platform}.`,
+    "",
+    "Each variation must have a completely different creator persona, creative angle, and emotional arc.",
+    "Every spoken word must sound natural and unscripted — avoid any marketing language.",
+    "Return ONLY the JSON array.",
+  ].join("\n");
+
+  return callClaude(
+    UGC_SYSTEM_PROMPT,
+    userPrompt,
+    (raw) => UGCOutputSchema.parse(raw),
   );
 }

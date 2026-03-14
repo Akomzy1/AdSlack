@@ -8,6 +8,8 @@ export type CreditAction =
   | "remix.copy"
   | "remix.brief"
   | "remix.wireframe"
+  | "remix.storyboard"
+  | "remix.ugc"
   | "anatomy.generate";
 
 /** Cost per action in credits */
@@ -17,6 +19,8 @@ const CREDIT_COST: Record<CreditAction, number> = {
   "remix.copy": 1,
   "remix.brief": 1,
   "remix.wireframe": 2,
+  "remix.storyboard": 2,
+  "remix.ugc": 1,
   "anatomy.generate": 1,
 };
 

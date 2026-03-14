@@ -16,9 +16,8 @@ const nextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
-  experimental: {
-    typedRoutes: true,
-  },
+  typedRoutes: true,
+  turbopack: {},
   // Proxy PostHog through Next.js to avoid ad blockers
   async rewrites() {
     return [

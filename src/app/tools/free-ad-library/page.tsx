@@ -12,6 +12,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Browse today's top 20 highest-velocity ads across TikTok, Meta, YouTube, and more. Updated daily. No account required. Find winning creative before your competitors do.",
   path: "/tools/free-ad-library",
+  ogType: "tool",
   keywords: [
     "free ad library",
     "trending ads today",
@@ -42,24 +43,24 @@ const TIER_CONFIG: { [k: string]: TierConfig | undefined } = {
 
 const FAQ_ITEMS = [
   {
-    question: "What is the AdForge free ad library?",
+    question: "What is the AdSlack free ad library?",
     answer:
-      "The free ad library shows today's top 20 highest-velocity ads tracked by AdForge, refreshed daily. Velocity measures how fast an ad is gaining traction — so these are the ads gaining momentum right now, not just the ones with the most total views.",
+      "The free ad library shows today's top 20 highest-velocity ads tracked by AdSlack, refreshed daily. Velocity measures how fast an ad is gaining traction — so these are the ads gaining momentum right now, not just the ones with the most total views.",
   },
   {
     question: "How often is this updated?",
     answer:
-      "The free library updates daily with a fresh top 20 list. AdForge Pro subscribers get real-time updates every 30 minutes across 2M+ ads.",
+      "The free library updates daily with a fresh top 20 list. AdSlack Pro subscribers get real-time updates every 30 minutes across 2M+ ads.",
   },
   {
-    question: "What's included in a free AdForge account?",
+    question: "What's included in a free AdSlack account?",
     answer:
       "A free account gives you access to 50 ad views per month, basic filtering by niche and platform, and the ability to save up to 10 ads. Pro unlocks unlimited browsing, AI X-Ray analysis, the brief generator, and velocity alerts.",
   },
   {
     question: "Are these ads from real advertisers?",
     answer:
-      "Yes. Every ad in AdForge's database is a real paid advertisement currently (or recently) running on the specified platform. We track ad data from TikTok, Meta (Facebook/Instagram), YouTube, and Google.",
+      "Yes. Every ad in AdSlack's database is a real paid advertisement currently (or recently) running on the specified platform. We track ad data from TikTok, Meta (Facebook/Instagram), YouTube, and Google.",
   },
 ];
 
@@ -130,7 +131,7 @@ export default async function FreeAdLibraryPage() {
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-xs font-bold text-white">A</div>
-            <span className="font-bold text-foreground">AdForge</span>
+            <span className="font-bold text-foreground">AdSlack</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/blog" className="hidden text-sm text-muted-foreground hover:text-foreground transition-colors sm:block">Blog</Link>
@@ -289,7 +290,7 @@ export default async function FreeAdLibraryPage() {
                 {
                   icon: "📡",
                   title: "We track millions of ads",
-                  body: "AdForge monitors paid ads across TikTok, Meta, YouTube, and Google — updated every 30 minutes.",
+                  body: "AdSlack monitors paid ads across TikTok, Meta, YouTube, and Google — updated every 30 minutes.",
                 },
                 {
                   icon: "⚡",
@@ -336,8 +337,8 @@ export default async function FreeAdLibraryPage() {
                 [
                   { href: "/blog/tiktok-ad-spy-tools-guide", label: "TikTok Ad Spy Guide →" },
                   { href: "/blog/viral-ad-hooks-frameworks", label: "8 Viral Hook Frameworks →" },
-                  { href: "/vs/pipiads", label: "AdForge vs PiPiAds →" },
-                  { href: "/vs/minea", label: "AdForge vs Minea →" },
+                  { href: "/vs/pipiads", label: "AdSlack vs PiPiAds →" },
+                  { href: "/vs/minea", label: "AdSlack vs Minea →" },
                 ] as { href: Route; label: string }[]
               ).map((link) => (
                 <Link
@@ -357,7 +358,7 @@ export default async function FreeAdLibraryPage() {
           <div className="mx-auto max-w-xl px-6">
             <h2 className="mb-3 text-3xl font-bold">Ready to find winning ads in real-time?</h2>
             <p className="mb-8 text-muted">
-              Join 2,400+ marketers who use AdForge to catch viral creative 48 hours before everyone else.
+              Join 2,400+ marketers who use AdSlack to catch viral creative 48 hours before everyone else.
             </p>
             <Link
               href="/api/auth/signin"
@@ -372,7 +373,7 @@ export default async function FreeAdLibraryPage() {
       <footer className="border-t border-border bg-surface py-8">
         <div className="mx-auto max-w-6xl px-6 text-center text-xs text-muted">
           <p>
-            © {new Date().getFullYear()} AdForge ·{" "}
+            © {new Date().getFullYear()} AdSlack ·{" "}
             <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>
             {" · "}
             <Link href="/" className="hover:text-foreground transition-colors">Home</Link>

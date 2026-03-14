@@ -42,7 +42,42 @@ function getResend(): import("resend").Resend | null {
   return resendClient;
 }
 
-// ── Main send function ────────────────────────────────────────────────────────
+// ── Brief email types ─────────────────────────────────────────────────────────
+
+export interface BriefEmailPayload {
+  to:            string;
+  creatorName:   string;
+  senderName:    string;
+  briefType:     string;
+  customMessage: string | null;
+  responseToken: string;
+}
+
+// ── Brief email send ──────────────────────────────────────────────────────────
+
+export async function sendBriefEmail(payload: BriefEmailPayload): Promise<void> {
+  const resend = getResend();
+  const briefLabel: Record<string, string> = {
+    CREATIVE_BRIEF: "Creative Brief",
+    UGC_SCRIPT:     "UGC Script",
+    STORYBOARD:     "Storyboard",
+    CUSTOM:         "Custom Brief",
+  };
+  const label   = briefLabel[payload.briefType] ?? "Brief";
+  const subject = `${payload.senderName} sent you a ${label} — ${APP_NAME}`;
+  const html    = buildBriefEmailHtml(payload, label);
+
+  if (!resend) {
+    console.log(`[email] Would send brief to ${payload.to}: ${subject}`);
+    return;
+  }
+
+  const from = process.env.EMAIL_FROM ?? `${APP_NAME} <noreply@adslack.com>`;
+  const { error } = await resend.emails.send({ from, to: payload.to, subject, html });
+  if (error) throw new Error(`Resend error: ${error.message}`);
+}
+
+// ── Alert email send ──────────────────────────────────────────────────────────
 
 export async function sendAlertEmail(payload: AlertEmailPayload): Promise<void> {
   const resend = getResend();
@@ -219,4 +254,75 @@ function esc(str: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function buildBriefEmailHtml(payload: BriefEmailPayload, label: string): string {
+  const respondUrl = `${APP_URL}/creators/respond/${payload.responseToken}`;
+  const messageBlock = payload.customMessage
+    ? `<tr><td style="padding-top:16px;">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#f97316;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+        <p style="margin:0;font-size:14px;color:#e0e0f0;line-height:1.6;border-left:2px solid #f9731650;padding-left:12px;font-style:italic;">
+          &ldquo;${esc(payload.customMessage)}&rdquo;
+        </p>
+      </td></tr>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${APP_NAME} — Brief Received</title>
+</head>
+<body style="margin:0;padding:0;background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0f;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+        <!-- Header -->
+        <tr><td style="padding-bottom:32px;">
+          <span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">${APP_NAME}</span>
+          <span style="font-size:12px;color:#f97316;margin-left:8px;font-weight:600;">CREATORS</span>
+        </td></tr>
+
+        <!-- Main card -->
+        <tr><td style="background:#13131a;border:1px solid #1e1e2e;border-radius:16px;padding:28px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td>
+              <p style="margin:0 0 4px;font-size:15px;color:#a0a0b0;">Hi ${esc(payload.creatorName)},</p>
+              <p style="margin:0 0 20px;font-size:22px;font-weight:700;color:#ffffff;line-height:1.3;">
+                You received a <span style="color:#f97316;">${esc(label)}</span>
+              </p>
+              <p style="margin:0;font-size:14px;color:#a0a0b0;line-height:1.6;">
+                <strong style="color:#e0e0f0;">${esc(payload.senderName)}</strong> wants to collaborate with you
+                and has sent you a ${esc(label)} via ${APP_NAME}.
+              </p>
+            </td></tr>
+            ${messageBlock}
+            <tr><td style="padding-top:24px;">
+              <a href="${respondUrl}"
+                 style="display:inline-block;background:#f97316;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;">
+                View Brief &amp; Respond →
+              </a>
+            </td></tr>
+            <tr><td style="padding-top:16px;">
+              <p style="margin:0;font-size:12px;color:#505070;">
+                Or copy this link: <a href="${respondUrl}" style="color:#f97316;text-decoration:none;">${respondUrl}</a>
+              </p>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding-top:24px;">
+          <p style="margin:0;font-size:12px;color:#505070;text-align:center;">
+            Sent via ${APP_NAME} Creator Marketplace · No account required to respond
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }

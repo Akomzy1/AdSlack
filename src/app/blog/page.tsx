@@ -42,7 +42,7 @@ export default async function BlogIndexPage({
       <section className="border-b border-border/60 py-16">
         <div className="mx-auto max-w-5xl px-6">
           <div className="mb-2 text-sm font-semibold uppercase tracking-widest text-accent">
-            AdForge Blog
+            AdSlack Blog
           </div>
           <h1 className="mb-3 text-4xl font-bold tracking-tight sm:text-5xl">
             Ad Intelligence
@@ -98,7 +98,7 @@ export default async function BlogIndexPage({
 
         {/* Internal links to tools */}
         <div className="mt-16 rounded-2xl border border-accent/20 bg-accent/5 p-8">
-          <h2 className="mb-4 text-xl font-bold">Explore AdForge tools</h2>
+          <h2 className="mb-4 text-xl font-bold">Explore AdSlack tools</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               {
@@ -108,8 +108,8 @@ export default async function BlogIndexPage({
               },
               {
                 href: "/vs/pipiads",
-                title: "AdForge vs PiPiAds",
-                desc: "How does AdForge compare to the most popular TikTok spy tool?",
+                title: "AdSlack vs PiPiAds",
+                desc: "How does AdSlack compare to the most popular TikTok spy tool?",
               },
               {
                 href: "/api/auth/signin",

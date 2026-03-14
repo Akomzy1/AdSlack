@@ -37,6 +37,10 @@ export interface AdWithMetrics {
   // Cached velocity fields (updated by cron every 6h)
   velocityScore: number;
   velocityTier: VelocityTier;
+  // Cached saturation fields (updated by cron every 12h)
+  saturationScore: number | null;
+  duplicateCount: number;
+  duplicateAdvertiserCount: number;
   latestMetrics: AdMetricsSnapshot | null;
 }
 

@@ -62,6 +62,25 @@ const AD_TYPE_ICON: Record<string, string> = {
   CAROUSEL: "⊞",
 };
 
+// Saturation dot: shown next to velocity badge; red/orange palette
+function SaturationDot({ score }: { score: number | null }) {
+  if (score == null) return null;
+  let color: string;
+  let label: string;
+  if (score <= 20)      { color = "bg-emerald-400"; label = `Fresh (${score})`;        }
+  else if (score <= 45) { color = "bg-blue-400";    label = `Growing (${score})`;      }
+  else if (score <= 70) { color = "bg-amber-400";   label = `Crowded (${score})`;      }
+  else if (score <= 90) { color = "bg-orange-400";  label = `Saturated (${score})`;    }
+  else                  { color = "bg-red-500";      label = `Oversaturated (${score})`; }
+
+  return (
+    <span
+      title={`Market saturation: ${label}`}
+      className={`shrink-0 inline-block h-2 w-2 rounded-full ${color}`}
+    />
+  );
+}
+
 const VELOCITY_CONFIG: Record<
   VelocityTier,
   { label: string; className: string; animate?: string }
@@ -172,20 +191,23 @@ export function AdCard({ ad, onClick }: AdCardProps) {
               </p>
             )}
           </div>
-          {velocity && (
-            <span
-              className={[
-                "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                velocity.className,
-                velocity.animate ?? "",
-              ].join(" ")}
-            >
-              {velocity.label}
-              {ad.velocityScore > 0 && (
-                <span className="ml-1 font-mono opacity-70">{ad.velocityScore}</span>
-              )}
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <SaturationDot score={ad.saturationScore ?? null} />
+            {velocity && (
+              <span
+                className={[
+                  "rounded-full border px-2 py-0.5 text-[10px] font-medium",
+                  velocity.className,
+                  velocity.animate ?? "",
+                ].join(" ")}
+              >
+                {velocity.label}
+                {ad.velocityScore > 0 && (
+                  <span className="ml-1 font-mono opacity-70">{ad.velocityScore}</span>
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Hook text */}

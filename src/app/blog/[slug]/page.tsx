@@ -8,7 +8,7 @@ import { getPostBySlug, getPostSlugs, getRelatedPosts } from "@/lib/posts";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { PostCard } from "@/components/blog/PostCard";
 import { mdxComponents } from "@/components/blog/MdxComponents";
-import { buildMetadata, blogPostSchema } from "@/lib/seo";
+import { buildMetadata, blogPostSchema, breadcrumbSchema, canonical } from "@/lib/seo";
 
 // ── Static params ─────────────────────────────────────────────────────────────
 
@@ -56,12 +56,22 @@ export default async function BlogPostPage({
     authorName: post.author.name,
   });
 
+  const breadcrumbLd = breadcrumbSchema([
+    { name: "Home", url: canonical("/") },
+    { name: "Blog", url: canonical("/blog") },
+    { name: post.title, url: canonical(`/blog/${post.slug}`) },
+  ]);
+
   return (
     <>
       {/* JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
       <main className="min-h-screen bg-background">
@@ -110,7 +120,7 @@ export default async function BlogPostPage({
           <div className="flex gap-12">
             {/* Article */}
             <article className="min-w-0 flex-1">
-              <div className="prose-adforge">
+              <div className="prose-adslack">
                 <MDXRemote
                   source={post.content}
                   components={mdxComponents}
@@ -133,7 +143,7 @@ export default async function BlogPostPage({
                     <p className="font-semibold text-foreground">{post.author.name}</p>
                     <p className="text-sm text-muted">{post.author.role}</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      The AdForge team obsesses over ad creative performance so you don&apos;t have to. We track millions of ads daily and distil what works into actionable guides.
+                      The AdSlack team obsesses over ad creative performance so you don&apos;t have to. We track millions of ads daily and distil what works into actionable guides.
                     </p>
                   </div>
                 </div>
@@ -164,7 +174,7 @@ export default async function BlogPostPage({
                     Find ads like these
                   </p>
                   <p className="mb-3 text-xs text-muted">
-                    AdForge tracks viral ads in real-time across TikTok, Meta, YouTube, and more.
+                    AdSlack tracks viral ads in real-time across TikTok, Meta, YouTube, and more.
                   </p>
                   <Link
                     href="/api/auth/signin"
@@ -191,7 +201,7 @@ export default async function BlogPostPage({
                           href={href}
                           className="block rounded py-1 text-xs text-muted hover:text-foreground transition-colors"
                         >
-                          AdForge {label}
+                          AdSlack {label}
                         </Link>
                       </li>
                     ))}

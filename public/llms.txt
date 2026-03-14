@@ -1,0 +1,98 @@
+# AdSlack
+
+> AdSlack is an AI-powered ad intelligence SaaS platform that helps digital marketers, media buyers, and creative agencies discover winning advertising creatives before their competitors. Core capabilities: real-time velocity scoring, AI creative deconstruction (Anthropic Claude), one-click creative brief generation, and cross-platform ad discovery across TikTok, Meta, YouTube, Google Ads, Pinterest, and Snapchat.
+
+## What AdSlack Does
+
+AdSlack tracks advertising creatives across six major ad platforms and scores them using a proprietary velocity metric (0–100, updated every 30 minutes). The platform surfaces ads gaining the most momentum in real-time, enabling users to identify breakout creatives within 48 hours of launch — before they become mainstream and lose their competitive edge.
+
+## Core Features
+
+- **Velocity Scoring**: Real-time 0–100 score measuring ad momentum across 50+ niches. Updated every 30 minutes. Scores of 70+ indicate high growth; 90+ is exceptional for a niche.
+- **AI X-Ray Analysis**: Powered by Anthropic Claude. Deconstructs any ad's hook structure, emotional triggers, CTA mechanics, scroll-stop techniques, and persuasion psychology. Explains exactly why an ad is performing well.
+- **Ad Discovery Engine**: 2M+ ad database searchable by niche, platform, velocity tier, days running, brand name, and keyword (across hooks, captions, and video transcripts).
+- **Brief Generator**: One-click creative brief from any winning ad. Output includes hook strategy, scene-by-scene breakdown, copy angles, emotion triggers, music direction, platform specs, and targeting recommendations — ready to hand to a video editor or UGC creator.
+- **Velocity Alerts**: Real-time email notifications when ads exceed velocity thresholds in selected niches. Configurable by category, platform, and score threshold.
+- **Trend Forecasting**: Identifies emerging trends 2–3 weeks ahead using velocity pattern analysis.
+- **Hook & Script Remix**: AI rewrites any ad's hook or full script in multiple angles for A/B testing.
+- **Saturation Detection**: Tracks ad duplication and market saturation scores to identify oversaturated niches.
+
+## Supported Platforms
+
+TikTok, Meta (Facebook & Instagram), YouTube, Google Ads, Pinterest, Snapchat
+
+## Data Freshness
+
+- Velocity scores updated every 30 minutes
+- Ads ingested from official sources (Meta Ad Library, TikTok Creative Center, YouTube) plus proprietary crawlers
+- Database: 2M+ ads across 50+ niches
+
+## Pricing (USD/month, billed monthly)
+
+| Plan   | Price | Key Limits |
+|--------|-------|------------|
+| Free   | $0    | 10 ad searches/day, basic previews, no AI features, no credit card required |
+| Pro    | $59   | Unlimited searches, 50 AI credits/month, AI X-Ray, brief generator, 5 velocity alerts |
+| Scale  | $149  | Unlimited AI credits, 20 velocity alerts, bulk CSV + brief export, 5 team seats |
+| Agency | $299  | Unlimited everything, 50 velocity alerts, 15 seats, white-label reports |
+
+AI credits reset monthly on billing cycle date. 1 credit = 1 AI-powered action (X-Ray breakdown, brief generation, hook remix, or script generation).
+
+## Frequently Asked Questions
+
+**How does AdSlack differ from AdSpy, PiPiAds, BigSpy, or Minea?**
+AdSlack refreshes velocity data every 30 minutes vs. competitors' 24–48 hour lag. AdSlack adds AI-powered creative deconstruction (X-Ray) and production-ready brief generation that competitors lack entirely. Pro plan starts at $59/month — cheaper than PiPiAds at $77/month.
+
+**What AI model powers the analysis?**
+All AI features are powered by Anthropic Claude. Claude Opus handles detailed anatomy breakdowns; Claude Sonnet handles faster remix generation.
+
+**What is velocity scoring?**
+A proprietary 0–100 metric measuring how fast an ad is gaining engagement momentum relative to its age and platform baseline. Updated every 30 minutes. Velocity measures current momentum — unlike "most viewed" or "most spent" metrics which measure historical totals.
+
+**Is there a free trial?**
+Yes. The Free plan provides 10 ad searches per day with no credit card required. AI-powered features (X-Ray, briefs, alerts) require a Pro plan or higher.
+
+**How do AI credits work?**
+Each AI-powered action costs 1 credit. Pro plans include 50 credits/month. Scale and Agency plans have unlimited credits. Credits reset on the billing cycle date.
+
+**Do you cover TikTok, Meta, and YouTube?**
+Yes — all four major platforms are fully supported. Velocity scores are calibrated per-platform so scores are comparable within each platform's context.
+
+## Target Users
+
+- Digital marketers and media buyers running paid advertising
+- E-commerce and DTC brands tracking competitor ad strategies
+- Creative agencies building ad pipelines
+- UGC creators and freelance media buyers
+- Marketing teams needing competitive intelligence and creative inspiration
+
+## Company
+
+AdSlack is a SaaS company building AI-powered ad intelligence tools.
+Website: https://adslack.com
+Contact: hello@adslack.com
+
+## Key URLs
+
+- Homepage: https://adslack.com
+- Free Ad Library (no account required): https://adslack.com/tools/free-ad-library
+- Pricing: https://adslack.com/#pricing
+- Blog: https://adslack.com/blog
+- Sign Up: https://adslack.com/api/auth/signin
+- Privacy Policy: https://adslack.com/privacy
+- Terms of Service: https://adslack.com/terms
+
+## Comparison Pages
+
+- AdSlack vs PiPiAds: https://adslack.com/vs/pipiads
+- AdSlack vs BigSpy: https://adslack.com/vs/bigspy
+- AdSlack vs AdSpy: https://adslack.com/vs/adspy
+- AdSlack vs Minea: https://adslack.com/vs/minea
+
+## Blog Content
+
+The AdSlack blog at https://adslack.com/blog covers ad intelligence strategy, creative analysis frameworks, platform-specific guides, and competitive tool comparisons. All content is written for digital marketing professionals.
+
+## Content Policy for AI Crawlers
+
+All content on adslack.com/blog, adslack.com/tools, adslack.com/vs, and the homepage is publicly accessible and may be indexed by AI search engines. Dashboard routes (/discover, /saved, /alerts, /admin) require authentication and should not be indexed.

@@ -6,10 +6,10 @@ import { PricingSection } from "@/components/landing/PricingSection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
 import { CtaEmailInput } from "@/components/landing/CtaEmailInput";
-import { buildMetadata, softwareAppSchema } from "@/lib/seo";
+import { buildMetadata, softwareAppSchema, faqSchema, howToSchema } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "AdForge — Find Winning Ads Before Your Competitors Do",
+  title: "AdSlack — Find Winning Ads Before Your Competitors Do",
   description:
     "AI-powered ad intelligence platform. Track viral velocity across TikTok, Meta, YouTube and more. Spot breakout creatives in 48 hours, deconstruct them with AI, and forge better ads faster.",
   path: "/",
@@ -122,7 +122,7 @@ function MockAppUI() {
         <div className="h-3 w-3 rounded-full bg-yellow-500/70" />
         <div className="h-3 w-3 rounded-full bg-green-500/70" />
         <div className="ml-4 flex-1 h-5 rounded bg-surface-3 text-[10px] text-muted flex items-center px-3">
-          adforge.io/explore
+          adslack.com/explore
         </div>
       </div>
 
@@ -268,21 +268,21 @@ export default function HomePage() {
 
   const testimonials = [
     {
-      quote: "AdForge completely changed how we do creative strategy. We spotted a skincare ad going viral on Tuesday morning — by Friday we had our own version running. ROAS was 4.2x.",
+      quote: "AdSlack completely changed how we do creative strategy. We spotted a skincare ad going viral on Tuesday morning — by Friday we had our own version running. ROAS was 4.2x.",
       name: "Jordan Kim",
       role: "Creative Director",
       company: "Halo Agency",
       avatar: "JK",
     },
     {
-      quote: "The velocity scoring is genuinely useful. Other tools just show you what's trending — AdForge shows you what's ABOUT to trend. That 48-hour window is everything in paid social.",
+      quote: "The velocity scoring is genuinely useful. Other tools just show you what's trending — AdSlack shows you what's ABOUT to trend. That 48-hour window is everything in paid social.",
       name: "Priya Mehta",
       role: "Head of Performance",
       company: "Velvet Commerce",
       avatar: "PM",
     },
     {
-      quote: "I cancelled my Minea and MagicBrief subscriptions the same week I signed up for AdForge. The AI X-Ray alone is worth the price — it's like having a senior creative strategist on call.",
+      quote: "I cancelled my Minea and MagicBrief subscriptions the same week I signed up for AdSlack. The AI X-Ray alone is worth the price — it's like having a senior creative strategist on call.",
       name: "Marcus Webb",
       role: "Media Buyer",
       company: "Freelance",
@@ -290,14 +290,83 @@ export default function HomePage() {
     },
   ];
 
-  const jsonLd = softwareAppSchema();
+  const schemas = [
+    softwareAppSchema(),
+    howToSchema({
+      name: "How to Find Winning Ads Before Your Competitors",
+      description:
+        "Use AdSlack's velocity scoring, AI X-Ray analysis, and brief generator to discover and deploy winning ad creatives faster than the competition.",
+      steps: [
+        {
+          name: "Discover",
+          text: "Search 2M+ ads by velocity score, niche, platform, days running, or keyword. AdSlack's velocity engine scores every ad 0–100 every 30 minutes, surfacing what's gaining momentum right now — not just the ads with the most total views.",
+          url: "https://adslack.com/discover",
+        },
+        {
+          name: "Deconstruct",
+          text: "Click AI X-Ray on any ad to instantly get a breakdown of the hook structure, emotional triggers, CTA mechanics, and scroll-stop techniques — powered by Anthropic Claude. Understand exactly why an ad is winning before you invest in recreating it.",
+          url: "https://adslack.com/discover",
+        },
+        {
+          name: "Forge",
+          text: "Generate a production-ready creative brief from any winning ad in one click. Includes hook variations, scene-by-scene breakdown, copy angles, targeting recommendations, and music direction — ready to hand directly to your creative team or AI video generator.",
+          url: "https://adslack.com/discover",
+        },
+      ],
+    }),
+    faqSchema([
+      {
+        question: "How is AdSlack different from AdSpy, BigSpy, or Minea?",
+        answer:
+          "Most ad spy tools show you ads and leave you to guess why they work. AdSlack goes further: our AI X-Ray breaks down the hook structure, emotional triggers, script formula, and persuasion mechanics of every winning ad. Then the Brief Generator turns those insights into production-ready creative briefs in seconds. AdSlack also refreshes velocity data every 30 minutes vs. competitors' 24–48 hour lag.",
+      },
+      {
+        question: "Where does the ad data come from?",
+        answer:
+          "AdSlack ingests ads from official platform data sources and public ad libraries (Meta Ad Library, TikTok Creative Center, YouTube) plus proprietary crawlers. Velocity scores are updated every 30 minutes based on real engagement metrics.",
+      },
+      {
+        question: "What AI model powers the analysis?",
+        answer:
+          "The Ad Anatomy X-Ray and all creative brief outputs are powered by Claude (Anthropic). AdSlack uses Claude Opus for detailed anatomy breakdowns and Claude Sonnet for faster remix generation — quality where it matters, speed everywhere else.",
+      },
+      {
+        question: "How does the velocity score work?",
+        answer:
+          "The velocity engine calculates a 0–100 score based on early engagement acceleration — how fast an ad is gaining views, likes, shares, and comments relative to its age and platform baseline. An ad scoring 90+ is statistically exceptional for its niche. Updated every 30 minutes.",
+      },
+      {
+        question: "What's included in the Creative Brief Export?",
+        answer:
+          "The AI generates a full production brief including: concept overview, target audience, key message, tone and style direction, shot list (scene by scene), music and audio direction, platform dimensions, duration, and CTA strategy — ready to hand to a video editor or UGC creator.",
+      },
+      {
+        question: "Is there a free plan?",
+        answer:
+          "Yes. The Free plan gives you 10 ad searches per day with no credit card required. Pro plans start at $59/month for unlimited searches, AI X-Ray analysis, brief generation, and velocity alerts.",
+      },
+      {
+        question: "How do AI credits work?",
+        answer:
+          "Each AI-powered action (anatomy breakdown, hook generation, script remix, creative brief) costs 1 credit. Pro plans include 50 credits/month. Scale and Agency plans have unlimited credits. Credits reset on your billing cycle date.",
+      },
+      {
+        question: "What platforms does AdSlack track?",
+        answer:
+          "AdSlack fully supports TikTok, Meta (Facebook and Instagram), YouTube, and Google Ads. Velocity scores are calibrated per-platform so a TikTok score of 85 is comparable to a Meta score of 85 within their respective contexts.",
+      },
+    ]),
+  ];
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {schemas.map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
       <ScrollReveal />
       <LandingNav />
 
@@ -324,7 +393,7 @@ export default function HomePage() {
 
             {/* Sub */}
             <p className="animate-reveal-up mx-auto mb-10 max-w-2xl text-lg text-muted-foreground leading-relaxed" style={{ animationDelay: "0.2s" }}>
-              AdForge tracks viral velocity across TikTok, Meta, YouTube, and more. Spot breakout creatives in the first 48 hours, deconstruct them with AI, and forge better ads — faster.
+              AdSlack tracks viral velocity across TikTok, Meta, YouTube, and more. Spot breakout creatives in the first 48 hours, deconstruct them with AI, and forge better ads — faster.
             </p>
 
             {/* CTAs */}
@@ -413,7 +482,7 @@ export default function HomePage() {
         <section className="py-24 md:py-32 bg-surface/50">
           <div className="mx-auto max-w-3xl px-6">
             <div className="mb-12 text-center reveal">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-accent">The AdForge Difference</p>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-accent">The AdSlack Difference</p>
               <h2 className="text-4xl font-bold tracking-tight">Built for speed.<br />Designed for wins.</h2>
               <p className="mt-4 text-muted">Why marketers switch from other tools and never look back.</p>
             </div>
@@ -423,7 +492,7 @@ export default function HomePage() {
               <div className="grid grid-cols-3 border-b border-border bg-surface-2">
                 <div className="col-span-1 px-6 py-4 text-xs font-semibold uppercase tracking-widest text-muted">Feature</div>
                 <div className="col-span-1 border-l border-border px-6 py-4 text-center">
-                  <span className="text-sm font-bold text-accent">AdForge</span>
+                  <span className="text-sm font-bold text-accent">AdSlack</span>
                 </div>
                 <div className="col-span-1 border-l border-border px-6 py-4 text-center">
                   <span className="text-sm font-medium text-muted">Others</span>
@@ -575,7 +644,7 @@ export default function HomePage() {
                   Your next winning ad<br />is already out there
                 </h2>
                 <p className="mb-10 text-lg text-muted">
-                  Join 2,400+ marketers who use AdForge to find it first.
+                  Join 2,400+ marketers who use AdSlack to find it first.
                 </p>
 
                 <div className="flex justify-center">
@@ -605,7 +674,7 @@ export default function HomePage() {
             <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-white font-bold text-sm">A</div>
-                <span className="font-bold text-foreground">AdForge</span>
+                <span className="font-bold text-foreground">AdSlack</span>
                 <span className="text-xs text-muted">AI-powered ad intelligence</span>
               </div>
               <nav className="flex flex-wrap items-center gap-6 text-xs text-muted">
@@ -616,7 +685,7 @@ export default function HomePage() {
               </nav>
             </div>
             <div className="mt-8 border-t border-border/60 pt-6 text-center text-xs text-muted">
-              © {new Date().getFullYear()} AdForge. All rights reserved.
+              © {new Date().getFullYear()} AdSlack. All rights reserved.
             </div>
           </div>
         </footer>
