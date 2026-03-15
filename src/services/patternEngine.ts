@@ -9,7 +9,7 @@
  * Virality formula:
  *   avgVelocity * ln(nicheSpread + 1) * ln(growthRate + 1) / ln(patternAgeDays + 2)
  *
- * Called by POST /api/admin/recalculate-patterns (cron 0 */6 * * *)
+ * Called by POST /api/admin/recalculate-patterns (cron: every 6 hours)
  */
 
 import { PatternStatus } from "@prisma/client";

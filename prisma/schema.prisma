@@ -197,6 +197,7 @@ model User {
   usageLogs     UsageLog[]
   creatorReviews CreatorReview[]
   sentBriefs     SentBrief[]
+  subscription   Subscription?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -204,6 +205,22 @@ model User {
   @@index([email])
   @@index([role])
   @@index([stripeCustomerId])
+}
+
+// ─── Subscriptions ────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  plan              UserRole  @default(FREE)
+  creditsUsed       Int       @default(0)
+  creditsLimit      Int       @default(10)
+  billingCycleStart DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Ads ──────────────────────────────────────────────────────────────────────
