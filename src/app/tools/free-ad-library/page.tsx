@@ -3,7 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
-import { buildMetadata, faqSchema } from "@/lib/seo";
+import { buildMetadata, faqSchema, breadcrumbSchema, howToSchema, canonical } from "@/lib/seo";
 
 export const revalidate = 86400; // ISR: regenerate once per day
 
@@ -117,14 +117,46 @@ function getMockAds() {
 
 export default async function FreeAdLibraryPage() {
   const ads = await getTopAds();
-  const jsonLd = faqSchema(FAQ_ITEMS);
+
+  const schemas = [
+    faqSchema(FAQ_ITEMS),
+    breadcrumbSchema([
+      { name: "Home", url: canonical("/") },
+      { name: "Tools", url: canonical("/tools/free-ad-library") },
+      { name: "Free Ad Library", url: canonical("/tools/free-ad-library") },
+    ]),
+    howToSchema({
+      name: "How to Find Winning Ads with the Free Ad Library",
+      description:
+        "Use AdSlack's free ad library to discover high-velocity ads before they saturate your feed.",
+      steps: [
+        {
+          name: "Browse today's top 20",
+          text: "View the daily-refreshed list of the highest-velocity ads across TikTok, Meta, YouTube, and Google — ranked by momentum, not total views.",
+          url: canonical("/tools/free-ad-library"),
+        },
+        {
+          name: "Spot the velocity tier",
+          text: "Each ad is tagged Explosive, High, Rising, or Steady. Focus on Explosive and High-tier ads — these are gaining traction fastest and are likely to dominate their niche within 48 hours.",
+        },
+        {
+          name: "Unlock AI X-Ray for deep analysis",
+          text: "Sign up free to access AI-powered ad anatomy breakdowns: hook analysis, emotional triggers, CTA structure, and the ability to remix the winning formula into your own creative.",
+          url: canonical("/api/auth/signin"),
+        },
+      ],
+    }),
+  ];
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {schemas.map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
 
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
