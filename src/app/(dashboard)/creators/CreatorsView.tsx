@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import type { Route } from "next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -338,9 +339,38 @@ function FilterSidebar({
   );
 }
 
+// ─── PRO paywall ──────────────────────────────────────────────────────────────
+
+const PRO_ROLES = new Set(["PRO", "SCALE", "AGENCY", "ADMIN"]);
+
+function ProPaywall() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center py-24 px-6 text-center">
+      <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-accent/10 text-4xl">
+        🎬
+      </div>
+      <h2 className="mb-2 text-2xl font-bold text-foreground">Creator Marketplace</h2>
+      <p className="mb-1 text-sm text-muted-foreground max-w-md">
+        Browse verified UGC creators, send creative briefs, and manage your campaigns — all from one place.
+      </p>
+      <p className="mb-8 text-xs text-muted">Available on Pro, Scale, and Agency plans.</p>
+      <Link
+        href={"/billing" as Route}
+        className="rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-accent-hover transition-colors"
+      >
+        Upgrade to Pro →
+      </Link>
+      <p className="mt-4 text-xs text-muted">
+        Starting at $59/mo · Cancel anytime
+      </p>
+    </div>
+  );
+}
+
 // ─── Main view ────────────────────────────────────────────────────────────────
 
 export function CreatorsView() {
+  const { data: session, status } = useSession();
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS);
   const [creators, setCreators] = useState<Creator[]>([]);
   const [total, setTotal]       = useState(0);
@@ -350,6 +380,7 @@ export function CreatorsView() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const searchRef = useRef<HTMLInputElement>(null);
+  const hasPro = status === "loading" || PRO_ROLES.has(session?.user?.role ?? "");
 
   // "/" shortcut to focus search
   useEffect(() => {
@@ -415,6 +446,8 @@ export function CreatorsView() {
     if (!hasMore || loadingMore) return;
     void fetchCreators(filters, page + 1, true);
   }, [fetchCreators, filters, hasMore, loadingMore, page]);
+
+  if (!hasPro) return <ProPaywall />;
 
   return (
     <div className="flex h-[calc(100vh-48px)] overflow-hidden">

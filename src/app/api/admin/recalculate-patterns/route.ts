@@ -6,7 +6,7 @@
  *   - CRON_SECRET header (set by Vercel Cron)
  *   - Admin session (ADMIN_EMAILS env var or AGENCY role)
  *
- * Vercel cron: { "path": "/api/admin/recalculate-patterns", "schedule": "0 */6 * * *" }
+ * Vercel cron schedule: every 6 hours (0 every-6 * * *)
  */
 
 import { NextResponse } from "next/server";

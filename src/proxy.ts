@@ -2,24 +2,36 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const DASHBOARD_PREFIX = "/discover";
-const PROTECTED_PREFIXES = [
+const CREATOR_PREFIX = "/creator/";
+const ADVERTISER_PREFIXES = [
   "/discover",
   "/anatomy",
   "/remix",
   "/settings",
   "/billing",
   "/campaigns",
+  "/saved",
+  "/products",
+  "/patterns",
+  "/creators",
+  "/alerts",
+  "/admin",
 ];
 
-// Routes inside (dashboard) group that require authentication
-function isDashboardRoute(pathname: string): boolean {
-  return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+function isCreatorRoute(pathname: string): boolean {
+  return pathname === "/creator" || pathname.startsWith(CREATOR_PREFIX);
 }
 
-// Auth routes — redirect to dashboard if already logged in
+function isAdvertiserRoute(pathname: string): boolean {
+  return ADVERTISER_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
 function isAuthRoute(pathname: string): boolean {
   return pathname.startsWith("/login") || pathname.startsWith("/signup");
+}
+
+function isSelectRoleRoute(pathname: string): boolean {
+  return pathname === "/select-role";
 }
 
 export async function proxy(req: NextRequest) {
@@ -31,17 +43,62 @@ export async function proxy(req: NextRequest) {
   });
 
   const isAuthenticated = Boolean(token);
+  const userRole = (token as { userRole?: string } | null)?.userRole ?? null;
 
-  // Unauthenticated user hitting a protected route → /login
-  if (isDashboardRoute(pathname) && !isAuthenticated) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("callbackUrl", req.url);
-    return NextResponse.redirect(loginUrl);
+  // ── /select-role: only allow if no userRole set ──────────────────────────
+  if (isSelectRoleRoute(pathname)) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("callbackUrl", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (userRole === "ADVERTISER") {
+      return NextResponse.redirect(new URL("/discover", req.url));
+    }
+    if (userRole === "CREATOR") {
+      return NextResponse.redirect(new URL("/creator/briefs", req.url));
+    }
+    return NextResponse.next();
   }
 
-  // Authenticated user hitting /login or /signup → /discover
+  // ── /creator/* routes ─────────────────────────────────────────────────────
+  if (isCreatorRoute(pathname)) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("callbackUrl", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!userRole) {
+      return NextResponse.redirect(new URL("/select-role", req.url));
+    }
+    if (userRole === "ADVERTISER") {
+      return NextResponse.redirect(new URL("/discover", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  // ── Advertiser routes ─────────────────────────────────────────────────────
+  if (isAdvertiserRoute(pathname)) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("callbackUrl", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!userRole) {
+      return NextResponse.redirect(new URL("/select-role", req.url));
+    }
+    if (userRole === "CREATOR") {
+      return NextResponse.redirect(new URL("/creator/briefs", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  // ── Auth routes: already logged in ───────────────────────────────────────
   if (isAuthRoute(pathname) && isAuthenticated) {
-    return NextResponse.redirect(new URL(DASHBOARD_PREFIX, req.url));
+    if (userRole === "CREATOR") {
+      return NextResponse.redirect(new URL("/creator/briefs", req.url));
+    }
+    return NextResponse.redirect(new URL("/discover", req.url));
   }
 
   return NextResponse.next();
@@ -49,13 +106,21 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths EXCEPT:
-     * - _next/static, _next/image (Next.js internals)
-     * - favicon.ico
-     * - Public files in /public
-     * - API routes (handled by their own auth guards)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/creator/:path*",
+    "/discover/:path*",
+    "/anatomy/:path*",
+    "/remix/:path*",
+    "/settings/:path*",
+    "/billing/:path*",
+    "/campaigns/:path*",
+    "/saved/:path*",
+    "/products/:path*",
+    "/patterns/:path*",
+    "/creators/:path*",
+    "/alerts/:path*",
+    "/admin/:path*",
+    "/select-role",
+    "/login",
+    "/signup",
   ],
 };

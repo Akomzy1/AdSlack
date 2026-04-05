@@ -7,7 +7,7 @@
  *   - Admin session (ADMIN_EMAILS env var or AGENCY role)
  *
  * Vercel cron.json example:
- *   { "crons": [{ "path": "/api/admin/recalculate-products", "schedule": "0 */12 * * *" }] }
+ *   { "crons": [{ "path": "/api/admin/recalculate-products", "schedule": "0 every-12h * * *" }] }
  */
 
 import { NextResponse } from "next/server";

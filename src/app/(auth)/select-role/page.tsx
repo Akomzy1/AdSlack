@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function SelectRolePage() {
-  const router = useRouter();
+  const { update } = useSession();
   const [loading, setLoading] = useState<"ADVERTISER" | "CREATOR" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,11 +23,9 @@ export default function SelectRolePage() {
         setLoading(null);
         return;
       }
-      if (role === "ADVERTISER") {
-        router.push("/discover");
-      } else {
-        router.push("/creator/onboarding");
-      }
+      // Refresh the JWT so the proxy sees the new userRole before redirecting
+      await update();
+      window.location.href = role === "ADVERTISER" ? "/discover" : "/creator/onboarding";
     } catch {
       setError("Network error. Please try again.");
       setLoading(null);
