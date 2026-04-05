@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "AdSlack Terms of Service — the rules and conditions for using our platform.",
+  description: "Adsentify Terms of Service — the rules and conditions for using our platform.",
 };
 
 const LAST_UPDATED  = "March 14, 2026";
-const CONTACT_EMAIL = "legal@adslack.com";
-const APP_NAME      = "AdSlack";
+const CONTACT_EMAIL = "legal@adsentify.com";
+const APP_NAME      = "Adsentify";
 
 export default function TermsPage() {
   return (

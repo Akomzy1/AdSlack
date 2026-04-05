@@ -100,7 +100,7 @@ export default function CreatorLayout({
           <div className="flex items-center gap-3">
             <Link href="/creator/briefs" className="flex items-center gap-2">
               <span className="text-lg font-bold" style={{ color: "#f97316" }}>
-                AdSlack
+                Adsentify
               </span>
               <span
                 className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"

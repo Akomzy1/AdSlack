@@ -136,7 +136,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       </form>
 
       <p className="text-center text-xs text-muted">
-        By continuing, you agree to Adslack&apos;s{" "}
+        By continuing, you agree to Adsentify&apos;s{" "}
         <a href="/terms" className="text-muted-foreground underline hover:text-foreground">
           Terms
         </a>{" "}

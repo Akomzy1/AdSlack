@@ -7,7 +7,7 @@ import Link from "next/link";
 
 type ConsentChoice = "all" | "essential" | null;
 
-const STORAGE_KEY  = "adslack:cookie-consent";
+const STORAGE_KEY  = "adsentify:cookie-consent";
 const CONSENT_VER  = "1"; // bump to re-prompt after policy changes
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────

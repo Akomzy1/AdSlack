@@ -68,7 +68,7 @@ function getLimiter(tier: string): Ratelimit | null {
     redis: r,
     limiter: Ratelimit.slidingWindow(rpm, "60 s"),
     analytics: true,
-    prefix: `adslack:rl:${tier}`,
+    prefix: `adsentify:rl:${tier}`,
   });
 
   limiters.set(tier, limiter);

@@ -284,7 +284,7 @@ const CATEGORIES: ChecklistCategory[] = [
 
 // ─── Storage key ─────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = "adslack:launch-checklist";
+const STORAGE_KEY = "adsentify:launch-checklist";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

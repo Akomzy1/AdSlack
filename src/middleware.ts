@@ -2,7 +2,7 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const CREATOR_PREFIX = "/creator";
+const CREATOR_PREFIX = "/creator/";
 const ADVERTISER_PREFIXES = [
   "/discover",
   "/anatomy",
@@ -19,7 +19,7 @@ const ADVERTISER_PREFIXES = [
 ];
 
 function isCreatorRoute(pathname: string): boolean {
-  return pathname.startsWith(CREATOR_PREFIX) || pathname.startsWith("/onboarding");
+  return pathname === "/creator" || pathname.startsWith(CREATOR_PREFIX);
 }
 
 function isAdvertiserRoute(pathname: string): boolean {
@@ -107,7 +107,6 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/creator/:path*",
-    "/onboarding/:path*",
     "/discover/:path*",
     "/anatomy/:path*",
     "/remix/:path*",

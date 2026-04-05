@@ -40,10 +40,10 @@ export default function SelectRolePage() {
       {/* Logo */}
       <div className="mb-10 text-center">
         <span className="text-2xl font-bold" style={{ color: "#f97316" }}>
-          AdSlack
+          Adsentify
         </span>
         <p className="mt-2 text-sm" style={{ color: "#6b7280" }}>
-          Welcome! Tell us how you&apos;ll be using AdSlack.
+          Welcome! Tell us how you&apos;ll be using Adsentify.
         </p>
       </div>
 

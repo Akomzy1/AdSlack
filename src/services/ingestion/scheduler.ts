@@ -1,7 +1,7 @@
 /**
  * scheduler.ts
  *
- * Orchestrates the Adslack ingestion pipeline.
+ * Orchestrates the Adsentify ingestion pipeline.
  *
  * Responsibilities:
  *  1. Decide which ingesters to run based on available env vars

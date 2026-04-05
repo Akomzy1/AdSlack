@@ -103,7 +103,7 @@ export function getPostBySlug(slug: string): PostWithContent | null {
     date: fm.date ?? new Date().toISOString().split("T")[0],
     readTime: fm.readTime ?? "5 min read",
     category: fm.category ?? "Guide",
-    author: fm.author ?? { name: "AdSlack Team", role: "Editorial", avatar: "AS" },
+    author: fm.author ?? { name: "Adsentify Team", role: "Editorial", avatar: "AS" },
     keywords: fm.keywords,
     coverImage: fm.coverImage,
     featured: fm.featured ?? false,

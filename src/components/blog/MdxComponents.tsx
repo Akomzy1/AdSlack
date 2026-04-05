@@ -51,12 +51,12 @@ export function InlineCta({ title, href = "/api/auth/signin", label = "Try it fr
 
 interface CompareRowProps {
   feature: string;
-  adslack: string | boolean;
+  adsentify: string | boolean;
   competitor: string | boolean;
   competitorName?: string;
 }
 
-export function CompareRow({ feature, adslack, competitor, competitorName = "Competitor" }: CompareRowProps) {
+export function CompareRow({ feature, adsentify, competitor, competitorName = "Competitor" }: CompareRowProps) {
   const renderCell = (val: string | boolean) => {
     if (typeof val === "boolean") {
       return val ? (
@@ -71,7 +71,7 @@ export function CompareRow({ feature, adslack, competitor, competitorName = "Com
   return (
     <tr className="border-b border-border/60 last:border-0">
       <td className="py-3 pr-4 text-sm text-foreground-2">{feature}</td>
-      <td className="px-4 py-3 text-center">{renderCell(adslack)}</td>
+      <td className="px-4 py-3 text-center">{renderCell(adsentify)}</td>
       <td className="px-4 py-3 text-center text-muted">{renderCell(competitor)}</td>
     </tr>
   );

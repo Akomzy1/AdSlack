@@ -5,7 +5,7 @@ import { AuthForm } from "@/components/auth/AuthForm";
 
 export const metadata: Metadata = {
   title: "Create Account",
-  description: "Start discovering winning ads with Adslack — free forever.",
+  description: "Start discovering winning ads with Adsentify — free forever.",
 };
 
 export default function SignupPage() {
@@ -43,7 +43,7 @@ export default function SignupPage() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            Join <span className="font-semibold text-foreground">2,400+</span> marketers already using Adslack
+            Join <span className="font-semibold text-foreground">2,400+</span> marketers already using Adsentify
           </p>
         </div>
 

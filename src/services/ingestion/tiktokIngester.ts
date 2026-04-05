@@ -2,7 +2,7 @@
  * tiktokIngester.ts
  *
  * Fetches trending/top ads from the TikTok Creative Center API and normalizes
- * them to RawAdData for the Adslack pipeline.
+ * them to RawAdData for the Adsentify pipeline.
  *
  * Docs:
  *   https://business-api.tiktok.com/portal/docs?id=1738864915188737

@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { SavedView } from "./SavedView";
 
 export const metadata: Metadata = {
-  title: "Saved Ads | Adslack",
+  title: "Saved Ads | Adsentify",
   description: "Your saved ads organized into folders.",
 };
 

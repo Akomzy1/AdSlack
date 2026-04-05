@@ -46,7 +46,7 @@ export default function NotFound() {
         </div>
 
         <p className="pt-2 font-mono text-xs text-muted/50">
-          AdSlack · Error 404
+          Adsentify · Error 404
         </p>
       </div>
     </div>

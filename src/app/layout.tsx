@@ -23,8 +23,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AdSlack — AI-Powered Ad Intelligence",
-    template: "%s | AdSlack",
+    default: "Adsentify — AI-Powered Ad Intelligence",
+    template: "%s | Adsentify",
   },
   description:
     "Discover winning ads, decode what makes them work, and forge better creatives — powered by AI.",
@@ -37,23 +37,23 @@ export const metadata: Metadata = {
     "Meta ad library",
     "TikTok ad research",
   ],
-  authors: [{ name: "AdSlack" }],
-  creator: "AdSlack",
+  authors: [{ name: "Adsentify" }],
+  creator: "Adsentify",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ),
   openGraph: {
     type: "website",
     locale: "en_US",
-    title: "AdSlack — AI-Powered Ad Intelligence",
+    title: "Adsentify — AI-Powered Ad Intelligence",
     description:
       "Discover winning ads, decode what makes them work, and forge better creatives.",
-    siteName: "AdSlack",
+    siteName: "Adsentify",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@adslackio",
-    title: "AdSlack — AI-Powered Ad Intelligence",
+    site: "@adsentifyio",
+    title: "Adsentify — AI-Powered Ad Intelligence",
     description:
       "Discover winning ads, decode what makes them work, and forge better creatives.",
   },

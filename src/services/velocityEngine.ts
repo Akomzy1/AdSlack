@@ -1,7 +1,7 @@
 /**
  * velocityEngine.ts
  *
- * Early Velocity Scoring Algorithm for Adslack.
+ * Early Velocity Scoring Algorithm for Adsentify.
  *
  * Measures how fast an ad gains traction relative to its age and niche baseline,
  * predicting viral potential *before* it peaks.

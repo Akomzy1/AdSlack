@@ -622,37 +622,37 @@ const ANATOMY_MAP: Record<string, {
 // ─── Main seed function ───────────────────────────────────────────────────────
 
 async function main() {
-  console.log("🌱 Seeding Adslack database...\n");
+  console.log("🌱 Seeding Adsentify database...\n");
 
   // ── Seed demo users ────────────────────────────────────────────────────────
   console.log("👤 Creating demo users...");
 
   const users = await Promise.all([
     db.user.upsert({
-      where: { email: "admin@adslack.com" },
+      where: { email: "admin@adsentify.com" },
       update: {},
       create: {
-        email: "admin@adslack.com",
+        email: "admin@adsentify.com",
         name: "Alex Admin",
         role: UserRole.AGENCY,
         image: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
       },
     }),
     db.user.upsert({
-      where: { email: "pro@adslack.com" },
+      where: { email: "pro@adsentify.com" },
       update: {},
       create: {
-        email: "pro@adslack.com",
+        email: "pro@adsentify.com",
         name: "Pat Pro",
         role: UserRole.PRO,
         image: "https://api.dicebear.com/7.x/avataaars/svg?seed=pro",
       },
     }),
     db.user.upsert({
-      where: { email: "free@adslack.com" },
+      where: { email: "free@adsentify.com" },
       update: {},
       create: {
-        email: "free@adslack.com",
+        email: "free@adsentify.com",
         name: "Fran Free",
         role: UserRole.FREE,
         image: "https://api.dicebear.com/7.x/avataaars/svg?seed=free",
@@ -1312,7 +1312,7 @@ async function main() {
 
   const CREATOR_PORTAL_SEED = [
     {
-      email: "sarah.chen.creator@adslack.example",
+      email: "sarah.chen.creator@adsentify.example",
       name: "Sarah Chen",
       profile: {
         displayName: "Sarah Chen",
@@ -1336,7 +1336,7 @@ async function main() {
       },
     },
     {
-      email: "marcus.johnson.creator@adslack.example",
+      email: "marcus.johnson.creator@adsentify.example",
       name: "Marcus Johnson",
       profile: {
         displayName: "Marcus Johnson",
@@ -1360,7 +1360,7 @@ async function main() {
       },
     },
     {
-      email: "priya.sharma.creator@adslack.example",
+      email: "priya.sharma.creator@adsentify.example",
       name: "Priya Sharma",
       profile: {
         displayName: "Priya Sharma",
@@ -1384,7 +1384,7 @@ async function main() {
       },
     },
     {
-      email: "jake.williams.creator@adslack.example",
+      email: "jake.williams.creator@adsentify.example",
       name: "Jake Williams",
       profile: {
         displayName: "Jake Williams",
@@ -1408,7 +1408,7 @@ async function main() {
       },
     },
     {
-      email: "amira.osei.creator@adslack.example",
+      email: "amira.osei.creator@adsentify.example",
       name: "Amira Osei",
       profile: {
         displayName: "Amira Osei",
@@ -1432,7 +1432,7 @@ async function main() {
       },
     },
     {
-      email: "tom.rivera.creator@adslack.example",
+      email: "tom.rivera.creator@adsentify.example",
       name: "Tom Rivera",
       profile: {
         displayName: "Tom Rivera",
@@ -1456,7 +1456,7 @@ async function main() {
       },
     },
     {
-      email: "lisa.park.creator@adslack.example",
+      email: "lisa.park.creator@adsentify.example",
       name: "Lisa Park",
       profile: {
         displayName: "Lisa Park",
@@ -1480,7 +1480,7 @@ async function main() {
       },
     },
     {
-      email: "david.okafor.creator@adslack.example",
+      email: "david.okafor.creator@adsentify.example",
       name: "David Okafor",
       profile: {
         displayName: "David Okafor",
@@ -1507,10 +1507,10 @@ async function main() {
 
   // Create an advertiser user to send briefs from
   const advertiserUser = await db.user.upsert({
-    where: { email: "brand@adslack.example" },
+    where: { email: "brand@adsentify.example" },
     update: {},
     create: {
-      email: "brand@adslack.example",
+      email: "brand@adsentify.example",
       name: "GlowLab Brand",
       role: UserRole.PRO,
       userRole: UserRole.ADVERTISER,
@@ -1571,7 +1571,7 @@ async function main() {
       },
       customMessage: "We love your GRWM style! Please focus on the morning routine angle.",
       status: BriefStatus.SENT,
-      senderEmail: "brand@adslack.example",
+      senderEmail: "brand@adsentify.example",
     },
     {
       creatorIdx: 1, // Marcus Johnson
@@ -1588,7 +1588,7 @@ async function main() {
       },
       customMessage: "Please emphasize the quick assembly — under 5 minutes is our key differentiator.",
       status: BriefStatus.ACCEPTED,
-      senderEmail: "brand@adslack.example",
+      senderEmail: "brand@adsentify.example",
     },
     {
       creatorIdx: 3, // Jake Williams
@@ -1604,7 +1604,7 @@ async function main() {
       },
       customMessage: null,
       status: BriefStatus.COMPLETED,
-      senderEmail: "brand@adslack.example",
+      senderEmail: "brand@adsentify.example",
     },
     {
       creatorIdx: 6, // Lisa Park
@@ -1621,7 +1621,7 @@ async function main() {
       },
       customMessage: "We'd love a GRWM format showing the full lip routine leading to the reveal.",
       status: BriefStatus.DECLINED,
-      senderEmail: "brand@adslack.example",
+      senderEmail: "brand@adsentify.example",
     },
     {
       creatorIdx: 7, // David Okafor
@@ -1637,7 +1637,7 @@ async function main() {
       },
       customMessage: "Your before/after content is incredible. Please lean into that format.",
       status: BriefStatus.SENT,
-      senderEmail: "brand@adslack.example",
+      senderEmail: "brand@adsentify.example",
     },
   ];
 

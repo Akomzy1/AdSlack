@@ -4,8 +4,8 @@ import { useState } from "react";
 
 const FAQS = [
   {
-    q: "How is Adslack different from AdSpy, BigSpy, or Minea?",
-    a: "Most ad spy tools show you ads and leave you to guess why they work. Adslack goes further: our AI X-Ray breaks down the hook structure, emotional triggers, script formula, and persuasion mechanics of every winning ad. Then the Remix Engine turns those insights into production-ready hooks, scripts, and creative briefs for your own campaigns — in seconds.",
+    q: "How is Adsentify different from AdSpy, BigSpy, or Minea?",
+    a: "Most ad spy tools show you ads and leave you to guess why they work. Adsentify goes further: our AI X-Ray breaks down the hook structure, emotional triggers, script formula, and persuasion mechanics of every winning ad. Then the Remix Engine turns those insights into production-ready hooks, scripts, and creative briefs for your own campaigns — in seconds.",
   },
   {
     q: "Where does the ad data come from?",

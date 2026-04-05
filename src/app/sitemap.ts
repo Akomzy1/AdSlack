@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/posts";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://adslack.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://adsentify.com";
 
 const COMPETITORS = ["pipiads", "bigspy", "adspy", "minea"];
 

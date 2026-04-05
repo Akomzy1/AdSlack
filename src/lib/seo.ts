@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://adslack.com";
-const SITE_NAME = "AdSlack";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://adsentify.com";
+const SITE_NAME = "Adsentify";
 
 // ── Canonical URL builder ─────────────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ export function buildMetadata(opts: PageSeoOptions): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      site: "@adslackio",
+      site: "@adsentifyio",
       title: `${opts.title} | ${SITE_NAME}`,
       description: opts.description,
       images: [ogImage],
@@ -83,15 +83,15 @@ export function organizationSchema() {
       height: 512,
       caption: SITE_NAME,
     },
-    sameAs: ["https://twitter.com/adslackio"],
+    sameAs: ["https://twitter.com/adsentifyio"],
     description:
       "AI-powered ad intelligence platform. Track viral velocity across TikTok, Meta, YouTube and more. Spot breakout creatives in 48 hours, deconstruct them with AI, and forge better ads faster.",
     foundingDate: "2025",
-    email: "hello@adslack.com",
+    email: "hello@adsentify.com",
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      email: "hello@adslack.com",
+      email: "hello@adsentify.com",
       availableLanguage: "English",
     },
   };
@@ -244,21 +244,21 @@ export function softwareAppSchema() {
         reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
         author: { "@type": "Person", name: "Jordan Kim", jobTitle: "Creative Director" },
         reviewBody:
-          "AdSlack completely changed how we do creative strategy. We spotted a skincare ad going viral on Tuesday morning — by Friday we had our own version running. ROAS was 4.2x.",
+          "Adsentify completely changed how we do creative strategy. We spotted a skincare ad going viral on Tuesday morning — by Friday we had our own version running. ROAS was 4.2x.",
       },
       {
         "@type": "Review",
         reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
         author: { "@type": "Person", name: "Priya Mehta", jobTitle: "Head of Performance" },
         reviewBody:
-          "The velocity scoring is genuinely useful. Other tools just show you what's trending — AdSlack shows you what's ABOUT to trend. That 48-hour window is everything in paid social.",
+          "The velocity scoring is genuinely useful. Other tools just show you what's trending — Adsentify shows you what's ABOUT to trend. That 48-hour window is everything in paid social.",
       },
       {
         "@type": "Review",
         reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
         author: { "@type": "Person", name: "Marcus Webb", jobTitle: "Media Buyer" },
         reviewBody:
-          "I cancelled my Minea and MagicBrief subscriptions the same week I signed up for AdSlack. The AI X-Ray alone is worth the price — it's like having a senior creative strategist on call.",
+          "I cancelled my Minea and MagicBrief subscriptions the same week I signed up for Adsentify. The AI X-Ray alone is worth the price — it's like having a senior creative strategist on call.",
       },
     ],
     publisher: { "@id": `${BASE_URL}/#organization` },

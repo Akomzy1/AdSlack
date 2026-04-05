@@ -29,7 +29,7 @@ export function LandingNav() {
             A
           </span>
           <span className="text-lg font-bold tracking-tight text-foreground">
-            Adslack
+            Adsentify
           </span>
         </Link>
 

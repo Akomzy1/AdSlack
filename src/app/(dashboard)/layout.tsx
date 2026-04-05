@@ -51,7 +51,7 @@ export default function DashboardLayout({
         {/* Top nav bar */}
         <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-surface px-5">
           <Link href="/discover" className="text-sm font-semibold text-foreground hover:text-accent transition-colors">
-            Adslack
+            Adsentify
           </Link>
           <div className="flex items-center gap-2">
             <Link

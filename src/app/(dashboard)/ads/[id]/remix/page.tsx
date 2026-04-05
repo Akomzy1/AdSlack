@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
   if (!ad) return { title: "Not Found" };
   return {
-    title: `Forge Remix — ${ad.productName ?? ad.brandName} | Adslack`,
+    title: `Forge Remix — ${ad.productName ?? ad.brandName} | Adsentify`,
     description: `AI-powered creative variations for ${ad.brandName}'s winning ad.`,
   };
 }

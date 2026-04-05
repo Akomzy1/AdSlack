@@ -21,12 +21,12 @@ export async function generateMetadata({
   if (!c) return {};
 
   return buildMetadata({
-    title: `AdSlack vs ${c.name}: Full Comparison (2026)`,
-    description: `Honest comparison of AdSlack vs ${c.name}. See feature differences, pricing, data freshness, and which ad spy tool is right for your team.`,
+    title: `Adsentify vs ${c.name}: Full Comparison (2026)`,
+    description: `Honest comparison of Adsentify vs ${c.name}. See feature differences, pricing, data freshness, and which ad spy tool is right for your team.`,
     path: `/vs/${c.slug}`,
     ogType: "compare",
     keywords: [
-      `AdSlack vs ${c.name}`,
+      `Adsentify vs ${c.name}`,
       `${c.name} alternative`,
       `${c.name} competitor`,
       `best ad spy tool`,
@@ -56,7 +56,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
   const breadcrumbLd = breadcrumbSchema([
     { name: "Home", url: canonical("/") },
     { name: "Comparisons", url: canonical("/vs/pipiads") },
-    { name: `AdSlack vs ${competitor.name}`, url: canonical(`/vs/${competitor.slug}`) },
+    { name: `Adsentify vs ${competitor.name}`, url: canonical(`/vs/${competitor.slug}`) },
   ]);
 
   return (
@@ -75,13 +75,13 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-xs font-bold text-white">A</div>
-            <span className="font-bold text-foreground">AdSlack</span>
+            <span className="font-bold text-foreground">Adsentify</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/blog" className="hidden text-sm text-muted-foreground hover:text-foreground transition-colors sm:block">Blog</Link>
             <Link href="/tools/free-ad-library" className="hidden text-sm text-muted-foreground hover:text-foreground transition-colors sm:block">Free Tools</Link>
             <Link href="/api/auth/signin" className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-hover transition-colors">
-              Try AdSlack free
+              Try Adsentify free
             </Link>
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
           <div className="mx-auto max-w-5xl px-6">
             {/* Breadcrumb */}
             <div className="mb-6 flex items-center gap-2 text-sm text-muted">
-              <Link href="/" className="hover:text-foreground transition-colors">AdSlack</Link>
+              <Link href="/" className="hover:text-foreground transition-colors">Adsentify</Link>
               <span>/</span>
               <span>Comparisons</span>
               <span>/</span>
@@ -112,7 +112,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
             </div>
 
             <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-              AdSlack vs {competitor.name}
+              Adsentify vs {competitor.name}
               <br />
               <span className="text-gradient">Full Comparison (2026)</span>
             </h1>
@@ -123,9 +123,9 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
             {/* Quick stats */}
             <div className="inline-grid grid-cols-2 gap-4 rounded-2xl border border-border bg-surface p-5 sm:grid-cols-4">
               {[
-                { label: "AdSlack refresh", value: "30 min" },
+                { label: "Adsentify refresh", value: "30 min" },
                 { label: `${competitor.name} refresh`, value: competitor.refreshRate },
-                { label: "AdSlack starts at", value: "$0/mo" },
+                { label: "Adsentify starts at", value: "$0/mo" },
                 { label: `${competitor.name} starts at`, value: competitor.monthlyPrice },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
@@ -146,7 +146,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
               <div className="grid grid-cols-3 border-b border-border bg-surface-2">
                 <div className="px-6 py-4 text-xs font-semibold uppercase tracking-widest text-muted">Feature</div>
                 <div className="border-l border-border px-6 py-4 text-center">
-                  <span className="text-sm font-bold text-accent">AdSlack</span>
+                  <span className="text-sm font-bold text-accent">Adsentify</span>
                 </div>
                 <div className="border-l border-border px-6 py-4 text-center">
                   <span className="text-sm font-semibold text-muted">{competitor.name}</span>
@@ -160,10 +160,10 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
                 >
                   <div className="px-6 py-3.5 text-sm text-foreground-2">{row.name}</div>
 
-                  {/* AdSlack cell */}
+                  {/* Adsentify cell */}
                   <div className="border-l border-border/60 px-6 py-3.5 flex items-center justify-center">
-                    {typeof row.adslack === "boolean" ? (
-                      row.adslack ? (
+                    {typeof row.adsentify === "boolean" ? (
+                      row.adsentify ? (
                         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/15 text-green-400">
                           <Check />
                         </span>
@@ -171,7 +171,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
                         <span className="text-muted/40 text-sm">—</span>
                       )
                     ) : (
-                      <span className="text-sm font-medium text-accent">{row.adslack}</span>
+                      <span className="text-sm font-medium text-accent">{row.adsentify}</span>
                     )}
                   </div>
 
@@ -199,7 +199,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
             <div className="rounded-2xl border border-accent/30 bg-accent/5 p-6">
               <div className="mb-4 flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-xs font-bold text-white">A</div>
-                <h3 className="font-bold text-foreground">Why teams choose AdSlack</h3>
+                <h3 className="font-bold text-foreground">Why teams choose Adsentify</h3>
               </div>
               <ul className="space-y-3">
                 {competitor.ourAdvantages.map((adv) => (
@@ -238,7 +238,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
                 href="/api/auth/signin"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-accent to-orange-600 px-6 py-3 text-sm font-bold text-white shadow-glow hover:shadow-[0_0_32px_rgba(249,115,22,0.5)] transition-all active:scale-95"
               >
-                Try AdSlack free — no credit card →
+                Try Adsentify free — no credit card →
               </Link>
             </div>
           </section>
@@ -267,7 +267,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
                   className="group rounded-xl border border-border bg-surface p-4 transition-all hover:border-accent/40 hover:bg-surface-2"
                 >
                   <p className="mb-1 font-semibold text-foreground group-hover:text-accent transition-colors">
-                    AdSlack vs {c.name} →
+                    Adsentify vs {c.name} →
                   </p>
                   <p className="text-xs text-muted">{c.tagline}</p>
                 </Link>
@@ -302,7 +302,7 @@ export default function VsPage({ params }: { params: { competitor: string } }) {
       <footer className="border-t border-border bg-surface py-8">
         <div className="mx-auto max-w-5xl px-6">
           <div className="flex flex-col items-center justify-between gap-4 text-xs text-muted sm:flex-row">
-            <span>© {new Date().getFullYear()} AdSlack. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Adsentify. All rights reserved.</span>
             <div className="flex items-center gap-6">
               <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
               <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>

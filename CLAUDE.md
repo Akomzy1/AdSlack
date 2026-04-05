@@ -1,7 +1,7 @@
-# Adslack — Claude Code Instructions
+# Adsentify — Claude Code Instructions
 
 ## Project Overview
-Adslack is [brief description of what this project does].
+Adsentify is [brief description of what this project does].
 
 ## Tech Stack
 - [e.g., Node.js / Python / React / etc.]

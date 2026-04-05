@@ -72,7 +72,7 @@ export async function sendBriefEmail(payload: BriefEmailPayload): Promise<void> 
     return;
   }
 
-  const from = process.env.EMAIL_FROM ?? `${APP_NAME} <noreply@adslack.com>`;
+  const from = process.env.EMAIL_FROM ?? `${APP_NAME} <noreply@adsentify.com>`;
   const { error } = await resend.emails.send({ from, to: payload.to, subject, html });
   if (error) throw new Error(`Resend error: ${error.message}`);
 }
@@ -93,7 +93,7 @@ export async function sendAlertEmail(payload: AlertEmailPayload): Promise<void> 
     return;
   }
 
-  const from = process.env.EMAIL_FROM ?? `${APP_NAME} <alerts@adslack.com>`;
+  const from = process.env.EMAIL_FROM ?? `${APP_NAME} <alerts@adsentify.com>`;
 
   const { error } = await resend.emails.send({
     from,

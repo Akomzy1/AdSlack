@@ -2,7 +2,7 @@
  * metaIngester.ts
  *
  * Fetches active ecommerce ads from the Meta Ad Library API and normalizes
- * them to RawAdData for the Adslack pipeline.
+ * them to RawAdData for the Adsentify pipeline.
  *
  * Docs: https://developers.facebook.com/docs/graph-api/reference/ads_archive/
  *

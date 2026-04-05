@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    default: "Blog — AdSlack",
-    template: "%s | AdSlack Blog",
+    default: "Blog — Adsentify",
+    template: "%s | Adsentify Blog",
   },
   description:
-    "Ad intelligence guides, creative strategy breakdowns, and platform deep-dives from the AdSlack team.",
+    "Ad intelligence guides, creative strategy breakdowns, and platform deep-dives from the Adsentify team.",
 };
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +21,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-xs font-bold text-white">
                 A
               </div>
-              <span className="font-bold text-foreground">AdSlack</span>
+              <span className="font-bold text-foreground">Adsentify</span>
             </Link>
             <span className="hidden text-border sm:block">/</span>
             <Link href="/blog" className="hidden text-sm text-muted-foreground hover:text-foreground transition-colors sm:block">
@@ -58,7 +58,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
       <footer className="mt-20 border-t border-border bg-surface py-10">
         <div className="mx-auto max-w-5xl px-6">
           <div className="flex flex-col items-center justify-between gap-4 text-sm text-muted sm:flex-row">
-            <span>© {new Date().getFullYear()} AdSlack. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Adsentify. All rights reserved.</span>
             <div className="flex items-center gap-6">
               <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
               <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>

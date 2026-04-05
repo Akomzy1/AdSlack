@@ -1,5 +1,5 @@
 /**
- * Shared types for the Adslack ingestion pipeline.
+ * Shared types for the Adsentify ingestion pipeline.
  *
  * RawAdData is the canonical intermediate format every ingester produces.
  * The normalizer consumes it and writes to the database.

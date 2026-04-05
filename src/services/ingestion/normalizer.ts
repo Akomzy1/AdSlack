@@ -1,7 +1,7 @@
 /**
  * normalizer.ts
  *
- * Shared normalization layer for the Adslack ingestion pipeline.
+ * Shared normalization layer for the Adsentify ingestion pipeline.
  *
  * Responsibilities:
  *  1. Classify ads into niches via keyword matching

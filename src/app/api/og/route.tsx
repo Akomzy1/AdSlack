@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
                     lineHeight: 1,
                   }}
                 >
-                  AdSlack
+                  Adsentify
                 </div>
                 <div
                   style={{

@@ -120,7 +120,7 @@ export default async function BlogPostPage({
           <div className="flex gap-12">
             {/* Article */}
             <article className="min-w-0 flex-1">
-              <div className="prose-adslack">
+              <div className="prose-adsentify">
                 <MDXRemote
                   source={post.content}
                   components={mdxComponents}
@@ -143,7 +143,7 @@ export default async function BlogPostPage({
                     <p className="font-semibold text-foreground">{post.author.name}</p>
                     <p className="text-sm text-muted">{post.author.role}</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      The AdSlack team obsesses over ad creative performance so you don&apos;t have to. We track millions of ads daily and distil what works into actionable guides.
+                      The Adsentify team obsesses over ad creative performance so you don&apos;t have to. We track millions of ads daily and distil what works into actionable guides.
                     </p>
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export default async function BlogPostPage({
                     Find ads like these
                   </p>
                   <p className="mb-3 text-xs text-muted">
-                    AdSlack tracks viral ads in real-time across TikTok, Meta, YouTube, and more.
+                    Adsentify tracks viral ads in real-time across TikTok, Meta, YouTube, and more.
                   </p>
                   <Link
                     href="/api/auth/signin"
@@ -201,7 +201,7 @@ export default async function BlogPostPage({
                           href={href}
                           className="block rounded py-1 text-xs text-muted hover:text-foreground transition-colors"
                         >
-                          AdSlack {label}
+                          Adsentify {label}
                         </Link>
                       </li>
                     ))}

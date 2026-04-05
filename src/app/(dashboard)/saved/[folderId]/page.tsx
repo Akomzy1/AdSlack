@@ -12,13 +12,13 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (params.folderId === "all") {
-    return { title: "All Saved Ads | Adslack" };
+    return { title: "All Saved Ads | Adsentify" };
   }
   const folder = await db.folder.findUnique({
     where: { id: params.folderId },
     select: { name: true },
   });
-  return { title: folder ? `${folder.name} — Saved | Adslack` : "Saved Folder" };
+  return { title: folder ? `${folder.name} — Saved | Adsentify` : "Saved Folder" };
 }
 
 export default async function FolderPage({ params }: Props) {

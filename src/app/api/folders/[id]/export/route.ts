@@ -190,7 +190,7 @@ export const GET = withSubscription<{ id: string }>(
     const parts: string[] = [
       `CREATIVE BRIEF PACK — ${folder.name.toUpperCase()}`,
       "=".repeat(60),
-      `Exported from Adslack · ${new Date().toLocaleDateString()}`,
+      `Exported from Adsentify · ${new Date().toLocaleDateString()}`,
       `${savedAds.length} ad${savedAds.length === 1 ? "" : "s"}`,
       "=".repeat(60),
       "",

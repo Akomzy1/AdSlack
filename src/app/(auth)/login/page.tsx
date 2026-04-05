@@ -5,7 +5,7 @@ import { AuthForm } from "@/components/auth/AuthForm";
 
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Sign in to your Adslack account.",
+  description: "Sign in to your Adsentify account.",
 };
 
 export default function LoginPage() {
@@ -22,7 +22,7 @@ export default function LoginPage() {
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Sign in to your Adslack account</p>
+            <p className="mt-1 text-sm text-muted-foreground">Sign in to your Adsentify account</p>
           </div>
         </div>
 

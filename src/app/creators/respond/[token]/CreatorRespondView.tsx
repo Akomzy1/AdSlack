@@ -182,7 +182,7 @@ export function CreatorRespondView({ token }: { token: string }) {
       {/* Header */}
       <header className="border-b border-border bg-surface px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <span className="text-lg font-bold text-foreground">Adslack</span>
+          <span className="text-lg font-bold text-foreground">Adsentify</span>
           <span className="text-xs text-muted">Creator Portal</span>
         </div>
       </header>

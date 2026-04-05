@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
         },
         tls: { rejectUnauthorized: false },
       },
-      from: process.env.EMAIL_FROM ?? "noreply@adslack.com",
+      from: process.env.EMAIL_FROM ?? "noreply@adsentify.com",
     }),
   ],
   callbacks: {
@@ -71,7 +71,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role ?? UserRole.FREE;
-        session.user.userRole = token.userRole ?? UserRole.ADVERTISER;
+        session.user.userRole = token.userRole ?? null;
         session.user.creditsRemaining = token.creditsRemaining ?? 0;
         session.user.creditsLimit = token.creditsLimit ?? 0;
       }

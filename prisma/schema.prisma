@@ -187,7 +187,7 @@ model User {
   name                 String?
   image                String?
   role                 UserRole  @default(FREE)
-  userRole             UserRole  @default(ADVERTISER)
+  userRole             UserRole?
   stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
 

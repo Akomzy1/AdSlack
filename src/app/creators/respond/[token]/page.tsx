@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import { CreatorRespondView } from "./CreatorRespondView";
 
 export const metadata: Metadata = {
-  title: "Respond to Brief — Adslack",
+  title: "Respond to Brief — Adsentify",
 };
 
 export default function CreatorRespondPage({ params }: { params: { token: string } }) {

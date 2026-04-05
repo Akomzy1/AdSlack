@@ -7,7 +7,7 @@ import { ALERT_LIMITS } from "@/lib/alertEngine";
 import { AlertsView } from "./AlertsView";
 
 export const metadata: Metadata = {
-  title: "Velocity Alerts | Adslack",
+  title: "Velocity Alerts | Adsentify",
   description: "Get notified when ads matching your criteria hit high velocity scores.",
 };
 

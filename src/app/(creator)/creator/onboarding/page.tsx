@@ -202,7 +202,7 @@ export default function CreatorOnboarding() {
         {/* Logo + Step indicator */}
         <div className="mb-8 text-center">
           <span className="text-2xl font-bold" style={{ color: "#f97316" }}>
-            AdSlack
+            Adsentify
           </span>
           <span
             className="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"

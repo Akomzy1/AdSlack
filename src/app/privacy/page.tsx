@@ -3,13 +3,13 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "AdSlack Privacy Policy — how we collect, use, and protect your data.",
+  description: "Adsentify Privacy Policy — how we collect, use, and protect your data.",
 };
 
 const LAST_UPDATED = "March 14, 2026";
-const CONTACT_EMAIL = "privacy@adslack.com";
-const APP_NAME = "AdSlack";
-const APP_URL = "https://adslack.com";
+const CONTACT_EMAIL = "privacy@adsentify.com";
+const APP_NAME = "Adsentify";
+const APP_URL = "https://adsentify.com";
 
 export default function PrivacyPage() {
   return (
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
             <p>
               {APP_NAME} (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) operates the website{" "}
               <a href={APP_URL} className="text-accent hover:underline">{APP_URL}</a>{" "}
-              and the AdSlack SaaS platform (the &ldquo;Service&rdquo;). This Privacy Policy explains how we collect,
+              and the Adsentify SaaS platform (the &ldquo;Service&rdquo;). This Privacy Policy explains how we collect,
               use, disclose, and safeguard your information when you use our Service.
             </p>
             <p>
