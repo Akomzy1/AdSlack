@@ -29,7 +29,43 @@ export interface PlanConfig {
   badge?: string;
 }
 
-export const PLANS: Record<UserRole, PlanConfig> = {
+export const PLANS: Partial<Record<UserRole, PlanConfig>> & Record<"FREE" | "PRO" | "SCALE" | "AGENCY", PlanConfig> = {
+  ADMIN: {
+    role: UserRole.ADMIN,
+    name: "Admin",
+    price: 0,
+    stripePriceEnvKey: "",
+    description: "Admin access.",
+    creditsPerMonth: -1,
+    searchesPerDay: -1,
+    teamSeats: 99,
+    features: ["ad_search", "ad_anatomy", "remix_hooks", "remix_script", "remix_copy", "remix_brief", "remix_wireframe", "predictive_alerts", "team_seats", "api_access", "white_label", "client_workspaces", "bulk_export"],
+    highlight: false,
+  },
+  ADVERTISER: {
+    role: UserRole.ADVERTISER,
+    name: "Advertiser",
+    price: 0,
+    stripePriceEnvKey: "",
+    description: "Ecommerce brand / advertiser access.",
+    creditsPerMonth: 10,
+    searchesPerDay: 10,
+    teamSeats: 1,
+    features: ["ad_search"],
+    highlight: false,
+  },
+  CREATOR: {
+    role: UserRole.CREATOR,
+    name: "Creator",
+    price: 0,
+    stripePriceEnvKey: "",
+    description: "UGC Creator access.",
+    creditsPerMonth: 0,
+    searchesPerDay: 0,
+    teamSeats: 1,
+    features: [],
+    highlight: false,
+  },
   FREE: {
     role: UserRole.FREE,
     name: "Free",
@@ -146,5 +182,5 @@ export function hasMinRole(userRole: UserRole, requiredRole: UserRole): boolean 
 }
 
 export function canAccessFeature(userRole: UserRole, feature: Feature): boolean {
-  return PLANS[userRole].features.includes(feature);
+  return PLANS[userRole]?.features.includes(feature) ?? false;
 }

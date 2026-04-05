@@ -8,6 +8,8 @@ import {
   AdStatus,
   RemixType,
   UserRole,
+  BriefType,
+  BriefStatus,
 } from "@prisma/client";
 
 const db = new PrismaClient();
@@ -1305,6 +1307,405 @@ async function main() {
 
   console.log(`   ✓ ${creatorCount} creators created\n`);
 
+  // ── Seed Creator Portal profiles ───────────────────────────────────────────
+  console.log("🎬 Creating Creator Portal profiles (Users + CreatorProfiles)...");
+
+  const CREATOR_PORTAL_SEED = [
+    {
+      email: "sarah.chen.creator@adslack.example",
+      name: "Sarah Chen",
+      profile: {
+        displayName: "Sarah Chen",
+        bio: "Beauty & skincare UGC creator based in LA. I specialize in GRWM and review-style content that authentically showcases your products to my highly-engaged audience.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=sarah-chen",
+        platforms: ["TikTok", "Instagram"],
+        niches: ["Beauty", "Skincare"],
+        contentStyles: ["UGC Review", "GRWM"],
+        priceMin: 75,
+        priceMax: 150,
+        turnaroundDays: 3,
+        portfolioUrls: ["https://example.com/sarah1", "https://example.com/sarah2"],
+        country: "United States",
+        language: "English",
+        isVerified: true,
+        isAvailable: true,
+        rating: 4.9,
+        reviewCount: 34,
+        completedBriefs: 38,
+        profileViews: 412,
+      },
+    },
+    {
+      email: "marcus.johnson.creator@adslack.example",
+      name: "Marcus Johnson",
+      profile: {
+        displayName: "Marcus Johnson",
+        bio: "Tech & office product creator. I make product demos that are honest, engaging, and actually show how your product solves real problems.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=marcus-johnson",
+        platforms: ["TikTok", "YouTube"],
+        niches: ["Tech", "Home Decor"],
+        contentStyles: ["Product Demo", "Comparison"],
+        priceMin: 100,
+        priceMax: 200,
+        turnaroundDays: 5,
+        portfolioUrls: ["https://example.com/marcus1"],
+        country: "United States",
+        language: "English",
+        isVerified: true,
+        isAvailable: true,
+        rating: 4.8,
+        reviewCount: 27,
+        completedBriefs: 31,
+        profileViews: 289,
+      },
+    },
+    {
+      email: "priya.sharma.creator@adslack.example",
+      name: "Priya Sharma",
+      profile: {
+        displayName: "Priya Sharma",
+        bio: "Home decor and kitchen creator. My content has an aesthetic, aspirational quality that makes your products the centrepiece of beautiful everyday moments.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=priya-sharma",
+        platforms: ["Instagram", "TikTok"],
+        niches: ["Home Decor", "Kitchen"],
+        contentStyles: ["Day-in-Life", "UGC Review"],
+        priceMin: 50,
+        priceMax: 100,
+        turnaroundDays: 2,
+        portfolioUrls: [],
+        country: "United States",
+        language: "English",
+        isVerified: true,
+        isAvailable: true,
+        rating: 4.7,
+        reviewCount: 19,
+        completedBriefs: 22,
+        profileViews: 178,
+      },
+    },
+    {
+      email: "jake.williams.creator@adslack.example",
+      name: "Jake Williams",
+      profile: {
+        displayName: "Jake Williams",
+        bio: "Kitchen & fitness creator known for funny, relatable comedy skits. I make brands memorable by wrapping your product in genuinely entertaining content.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=jake-williams",
+        platforms: ["TikTok"],
+        niches: ["Kitchen", "Fitness"],
+        contentStyles: ["Comedy Skit", "UGC Review"],
+        priceMin: 60,
+        priceMax: 120,
+        turnaroundDays: 4,
+        portfolioUrls: [],
+        country: "United States",
+        language: "English",
+        isVerified: false,
+        isAvailable: true,
+        rating: 4.6,
+        reviewCount: 14,
+        completedBriefs: 16,
+        profileViews: 143,
+      },
+    },
+    {
+      email: "amira.osei.creator@adslack.example",
+      name: "Amira Osei",
+      profile: {
+        displayName: "Amira Osei",
+        bio: "Multi-platform beauty and fitness educator. I break down the science and benefits of your product so your audience truly understands why they need it.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=amira-osei",
+        platforms: ["TikTok", "Instagram", "YouTube"],
+        niches: ["Beauty", "Fitness"],
+        contentStyles: ["Educational", "Tutorial"],
+        priceMin: 120,
+        priceMax: 250,
+        turnaroundDays: 7,
+        portfolioUrls: ["https://example.com/amira1", "https://example.com/amira2", "https://example.com/amira3"],
+        country: "United Kingdom",
+        language: "English",
+        isVerified: true,
+        isAvailable: false,
+        rating: 4.9,
+        reviewCount: 52,
+        completedBriefs: 57,
+        profileViews: 631,
+      },
+    },
+    {
+      email: "tom.rivera.creator@adslack.example",
+      name: "Tom Rivera",
+      profile: {
+        displayName: "Tom Rivera",
+        bio: "Pets and home decor UGC creator. My furry co-stars make every unboxing a joy to watch — pet product brands love working with me.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=tom-rivera",
+        platforms: ["TikTok", "Instagram"],
+        niches: ["Pets", "Home Decor"],
+        contentStyles: ["UGC Review", "Unboxing"],
+        priceMin: 40,
+        priceMax: 80,
+        turnaroundDays: 2,
+        portfolioUrls: [],
+        country: "United States",
+        language: "English",
+        isVerified: false,
+        isAvailable: true,
+        rating: 4.5,
+        reviewCount: 9,
+        completedBriefs: 11,
+        profileViews: 97,
+      },
+    },
+    {
+      email: "lisa.park.creator@adslack.example",
+      name: "Lisa Park",
+      profile: {
+        displayName: "Lisa Park",
+        bio: "Fashion and lifestyle creator. GRWM and storytime content that keeps viewers watching to the very end — perfect for fashion-forward and lifestyle brands.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=lisa-park",
+        platforms: ["Instagram", "TikTok"],
+        niches: ["Fashion", "Lifestyle"],
+        contentStyles: ["GRWM", "Storytime"],
+        priceMin: 80,
+        priceMax: 160,
+        turnaroundDays: 4,
+        portfolioUrls: ["https://example.com/lisa1"],
+        country: "United States",
+        language: "English",
+        isVerified: true,
+        isAvailable: true,
+        rating: 4.7,
+        reviewCount: 23,
+        completedBriefs: 26,
+        profileViews: 215,
+      },
+    },
+    {
+      email: "david.okafor.creator@adslack.example",
+      name: "David Okafor",
+      profile: {
+        displayName: "David Okafor",
+        bio: "Fitness and health creator specializing in before/after transformations and educational breakdowns. I show results, not just products.",
+        profileImageUrl: "https://api.dicebear.com/7.x/personas/svg?seed=david-okafor",
+        platforms: ["TikTok", "YouTube"],
+        niches: ["Fitness", "Health"],
+        contentStyles: ["Before/After", "Educational"],
+        priceMin: 90,
+        priceMax: 180,
+        turnaroundDays: 5,
+        portfolioUrls: ["https://example.com/david1", "https://example.com/david2"],
+        country: "United States",
+        language: "English",
+        isVerified: true,
+        isAvailable: true,
+        rating: 4.8,
+        reviewCount: 31,
+        completedBriefs: 35,
+        profileViews: 347,
+      },
+    },
+  ];
+
+  // Create an advertiser user to send briefs from
+  const advertiserUser = await db.user.upsert({
+    where: { email: "brand@adslack.example" },
+    update: {},
+    create: {
+      email: "brand@adslack.example",
+      name: "GlowLab Brand",
+      role: UserRole.PRO,
+      userRole: UserRole.ADVERTISER,
+      image: "https://api.dicebear.com/7.x/initials/svg?seed=GB",
+    },
+  });
+
+  const createdProfiles: { id: string; userId: string }[] = [];
+
+  for (const c of CREATOR_PORTAL_SEED) {
+    const user = await db.user.upsert({
+      where: { email: c.email },
+      update: {},
+      create: {
+        email: c.email,
+        name: c.name,
+        role: UserRole.FREE,
+        userRole: UserRole.CREATOR,
+        image: c.profile.profileImageUrl ?? undefined,
+      },
+    });
+
+    const { rating, reviewCount, completedBriefs, profileViews, ...profileData } = c.profile;
+
+    const profile = await db.creatorProfile.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        ...profileData,
+        rating,
+        reviewCount,
+        completedBriefs,
+        profileViews,
+      },
+    });
+
+    createdProfiles.push({ id: profile.id, userId: user.id });
+  }
+
+  console.log(`   ✓ ${createdProfiles.length} creator portal profiles created\n`);
+
+  // ── Seed sample briefs ─────────────────────────────────────────────────────
+  console.log("📨 Creating 5 sample briefs...");
+
+  const BRIEF_SAMPLES = [
+    {
+      creatorIdx: 0, // Sarah Chen
+      productName: "Vitamin C Brightening Serum",
+      brandName: "GlowLab",
+      briefType: BriefType.UGC_SCRIPT,
+      briefContent: {
+        hook: "POV: You've been using the same boring serum for years…",
+        problem: "Dull skin that no amount of moisturizer can fix.",
+        demo: "Apply 2 drops to clean skin, massage in circular motions, show the glow after 30 seconds.",
+        proof: "3 weeks of use — show the before & after transformation.",
+        cta: "Link in bio for 40% off your first bottle — today only.",
+      },
+      customMessage: "We love your GRWM style! Please focus on the morning routine angle.",
+      status: BriefStatus.SENT,
+      senderEmail: "brand@adslack.example",
+    },
+    {
+      creatorIdx: 1, // Marcus Johnson
+      productName: "ErgoDesk Pro Standing Desk",
+      brandName: "WorkWell",
+      briefType: BriefType.STORYBOARD,
+      briefContent: {
+        frames: [
+          { title: "The Problem", description: "Show slouching at a regular desk, back pain gesture.", visual: "Close up on posture, pained expression" },
+          { title: "The Reveal", description: "Unbox ErgoDesk Pro, assemble time-lapse.", visual: "Overhead assembly shot" },
+          { title: "The Solution", description: "Working at standing height, showing energy and focus.", visual: "Wide shot of desk setup, natural lighting" },
+          { title: "CTA", description: "Point to link in bio, show discount code.", visual: "Direct to camera, enthusiastic" },
+        ],
+      },
+      customMessage: "Please emphasize the quick assembly — under 5 minutes is our key differentiator.",
+      status: BriefStatus.ACCEPTED,
+      senderEmail: "brand@adslack.example",
+    },
+    {
+      creatorIdx: 3, // Jake Williams
+      productName: "AirFry Pro 6Qt",
+      brandName: "KitchenPeak",
+      briefType: BriefType.UGC_SCRIPT,
+      briefContent: {
+        hook: "Why is my family obsessed with this air fryer? 😭",
+        problem: "Cooking healthy food that actually tastes good is a full-time job.",
+        demo: "Throw frozen fries in, 12 minutes, golden perfection. No oil. No mess.",
+        proof: "My kids ate their veggies for the first time in 6 months.",
+        cta: "Grab yours — link in bio, limited stock.",
+      },
+      customMessage: null,
+      status: BriefStatus.COMPLETED,
+      senderEmail: "brand@adslack.example",
+    },
+    {
+      creatorIdx: 6, // Lisa Park
+      productName: "Velvet Lip Kit",
+      brandName: "Lumière Beauty",
+      briefType: BriefType.CREATIVE_BRIEF,
+      briefContent: {
+        objective: "Drive awareness and conversions for our new Velvet Lip Kit launch.",
+        targetAudience: "Women 18-35 who love bold, long-lasting lip colors.",
+        keyMessages: ["24-hour wear", "10 shades", "Vegan & cruelty-free"],
+        tone: "Sophisticated, playful, aspirational",
+        callToAction: "Shop the drop — link in bio",
+        duration: "30-45 seconds",
+      },
+      customMessage: "We'd love a GRWM format showing the full lip routine leading to the reveal.",
+      status: BriefStatus.DECLINED,
+      senderEmail: "brand@adslack.example",
+    },
+    {
+      creatorIdx: 7, // David Okafor
+      productName: "WheyMax Pro Protein",
+      brandName: "IronFuel",
+      briefType: BriefType.UGC_SCRIPT,
+      briefContent: {
+        hook: "I've tried 23 protein powders. Only this one actually tastes good AND works.",
+        problem: "Chalky texture, artificial sweeteners, and zero results after 3 months.",
+        demo: "Mix one scoop in water — show texture, taste reaction, genuine response.",
+        proof: "Before/after 8 weeks, show muscle definition difference.",
+        cta: "Code DAVID20 for 20% off your first order.",
+      },
+      customMessage: "Your before/after content is incredible. Please lean into that format.",
+      status: BriefStatus.SENT,
+      senderEmail: "brand@adslack.example",
+    },
+  ];
+
+  let briefCount = 0;
+  const createdBriefs: { id: string; creatorIdx: number }[] = [];
+
+  for (const b of BRIEF_SAMPLES) {
+    const profile = createdProfiles[b.creatorIdx];
+    if (!profile) continue;
+
+    const brief = await db.brief.create({
+      data: {
+        creatorId: profile.id,
+        senderUserId: advertiserUser.id,
+        productName: b.productName,
+        brandName: b.brandName,
+        briefType: b.briefType,
+        briefContent: b.briefContent,
+        customMessage: b.customMessage,
+        status: b.status,
+        senderEmail: b.senderEmail,
+        sentAt: new Date(Date.now() - randInt(1, 14) * 24 * 60 * 60 * 1000),
+        respondedAt: b.status === BriefStatus.SENT ? null : new Date(Date.now() - randInt(0, 5) * 24 * 60 * 60 * 1000),
+        completedAt: b.status === BriefStatus.COMPLETED ? new Date(Date.now() - randInt(0, 3) * 24 * 60 * 60 * 1000) : null,
+      },
+    });
+    createdBriefs.push({ id: brief.id, creatorIdx: b.creatorIdx });
+    briefCount++;
+  }
+
+  console.log(`   ✓ ${briefCount} briefs created\n`);
+
+  // ── Seed sample reviews ────────────────────────────────────────────────────
+  console.log("⭐ Creating 10 sample reviews...");
+
+  const REVIEW_SAMPLES = [
+    { creatorIdx: 0, rating: 5, comment: "Sarah delivered exactly what we briefed — authentic, polished, and high converting. Our ROAS on this UGC was 4.1x. Will be working with her again." },
+    { creatorIdx: 0, rating: 5, comment: "The fastest turnaround we've experienced with any creator. Script came to life perfectly. Highly recommend." },
+    { creatorIdx: 1, rating: 5, comment: "Marcus understood the brief immediately and delivered a product demo that explained our features better than our own team could. Incredible content." },
+    { creatorIdx: 1, rating: 4, comment: "Great content quality. Delivery was 2 days later than agreed but the final video was worth the wait." },
+    { creatorIdx: 2, rating: 5, comment: "Priya's aesthetic is exactly what our brand needed. She made our kitchen tools look aspirational without being unrealistic." },
+    { creatorIdx: 4, rating: 5, comment: "Amira's educational approach drove real engagement. Comments were full of questions about the product — exactly what we wanted. Conversion rate was exceptional." },
+    { creatorIdx: 4, rating: 5, comment: "We've worked with 50+ creators and Amira is in our top 3. Her audience is highly engaged and trusts her recommendations completely." },
+    { creatorIdx: 6, rating: 5, comment: "Lisa's GRWM format was perfect for our lip kit launch. The reveal moment was genuinely exciting and drove 3x more link clicks than our usual content." },
+    { creatorIdx: 7, rating: 5, comment: "David's before/after content is genuinely transformative. He showed results in a way that felt real and motivated people to buy." },
+    { creatorIdx: 7, rating: 4, comment: "Solid content, authentic delivery. The script was well-executed. Would have given 5 stars but we asked for 2 revisions which took extra time." },
+  ];
+
+  let reviewCount = 0;
+
+  for (const r of REVIEW_SAMPLES) {
+    const profile = createdProfiles[r.creatorIdx];
+    if (!profile) continue;
+
+    await db.creatorReview2.create({
+      data: {
+        creatorId: profile.id,
+        reviewerId: advertiserUser.id,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: new Date(Date.now() - randInt(5, 60) * 24 * 60 * 60 * 1000),
+      },
+    });
+    reviewCount++;
+  }
+
+  console.log(`   ✓ ${reviewCount} reviews created\n`);
+
   // ── Summary ────────────────────────────────────────────────────────────────
   console.log("✅ Seed complete!\n");
   console.log("   Summary:");
@@ -1316,7 +1717,10 @@ async function main() {
   console.log("   • 4 remixes");
   console.log("   • 3 alert rules");
   console.log("   • 5 usage log entries");
-  console.log(`   • ${creatorCount} creators\n`);
+  console.log(`   • ${creatorCount} creators (discovery marketplace)`);
+  console.log(`   • ${createdProfiles.length} creator portal profiles`);
+  console.log(`   • ${briefCount} sample briefs`);
+  console.log(`   • ${reviewCount} sample reviews\n`);
 }
 
 main()

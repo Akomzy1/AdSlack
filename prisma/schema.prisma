@@ -14,6 +14,9 @@ enum UserRole {
   PRO
   SCALE
   AGENCY
+  ADMIN
+  ADVERTISER
+  CREATOR
 }
 
 enum Platform {
@@ -184,6 +187,7 @@ model User {
   name                 String?
   image                String?
   role                 UserRole  @default(FREE)
+  userRole             UserRole  @default(ADVERTISER)
   stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
 
@@ -198,6 +202,9 @@ model User {
   creatorReviews CreatorReview[]
   sentBriefs     SentBrief[]
   subscription   Subscription?
+  sentBriefsNew  Brief[]         @relation("SentBriefs")
+  reviewsGiven   CreatorReview2[] @relation("ReviewsGiven")
+  creatorProfile CreatorProfile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -631,6 +638,68 @@ model SentBrief {
   @@index([creatorId])
   @@index([status])
   @@index([responseToken])
+}
+
+// ─── Creator Portal Models ────────────────────────────────────────────────────
+
+model CreatorProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  displayName     String
+  bio             String?  @db.Text
+  profileImageUrl String?
+  platforms       String[]
+  niches          String[]
+  contentStyles   String[]
+  priceMin        Int
+  priceMax        Int
+  turnaroundDays  Int      @default(5)
+  portfolioUrls   String[]
+  country         String?
+  language        String?  @default("English")
+  isVerified      Boolean  @default(false)
+  isAvailable     Boolean  @default(true)
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  completedBriefs Int      @default(0)
+  profileViews    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  briefs          Brief[]
+  reviews         CreatorReview2[]
+}
+
+model Brief {
+  id            String         @id @default(cuid())
+  creatorId     String
+  creator       CreatorProfile @relation(fields: [creatorId], references: [id])
+  senderUserId  String
+  sender        User           @relation("SentBriefs", fields: [senderUserId], references: [id])
+  productName   String
+  brandName     String
+  briefType     BriefType
+  briefContent  Json?
+  customMessage String?        @db.Text
+  status        BriefStatus    @default(SENT)
+  senderEmail   String?
+  sentAt        DateTime       @default(now())
+  respondedAt   DateTime?
+  completedAt   DateTime?
+  reviews       CreatorReview2[]
+}
+
+model CreatorReview2 {
+  id         String         @id @default(cuid())
+  creatorId  String
+  creator    CreatorProfile @relation(fields: [creatorId], references: [id])
+  reviewerId String
+  reviewer   User           @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  rating     Int
+  comment    String?        @db.Text
+  briefId    String?
+  brief      Brief?         @relation(fields: [briefId], references: [id])
+  createdAt  DateTime       @default(now())
 }
 
 // ─── User relation extensions (back-references) ───────────────────────────────

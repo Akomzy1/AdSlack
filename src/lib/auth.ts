@@ -46,6 +46,7 @@ export const authOptions: NextAuthOptions = {
           select: {
             id: true,
             role: true,
+            userRole: true,
             subscription: { select: { creditsUsed: true, creditsLimit: true } },
           },
         });
@@ -53,11 +54,12 @@ export const authOptions: NextAuthOptions = {
         if (dbUser) {
           const plan = PLANS[dbUser.role];
           const creditsLimit =
-            plan.creditsPerMonth === -1 ? 999999 : plan.creditsPerMonth;
+            plan && plan.creditsPerMonth === -1 ? 999999 : (plan?.creditsPerMonth ?? 0);
           const creditsUsed = dbUser.subscription?.creditsUsed ?? 0;
 
           token.id = dbUser.id;
           token.role = dbUser.role;
+          token.userRole = dbUser.userRole;
           token.creditsLimit = creditsLimit;
           token.creditsRemaining = Math.max(0, creditsLimit - creditsUsed);
         }
@@ -69,6 +71,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role ?? UserRole.FREE;
+        session.user.userRole = token.userRole ?? UserRole.ADVERTISER;
         session.user.creditsRemaining = token.creditsRemaining ?? 0;
         session.user.creditsLimit = token.creditsLimit ?? 0;
       }
